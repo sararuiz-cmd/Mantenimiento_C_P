@@ -388,25 +388,49 @@ GO
    Nota: solo valida que la cantidad usada no supere el stock disponible.
    No descuenta automáticamente para conservar los datos simulados originales.
    ============================================================ */
-CREATE TRIGGER TR_Detalle_Orden_Repuesto_ValidarStock
-ON Detalle_Orden_Repuesto
-AFTER INSERT, UPDATE
-AS
-BEGIN
-    SET NOCOUNT ON;
+/* ============================================================
+   TABLA: Repuestos
+   ============================================================ */
+CREATE TABLE Repuestos (
+    id_repuesto CHAR(4) NOT NULL,
+    nombre_repuesto NVARCHAR(100) NOT NULL,
+    categoria NVARCHAR(50) NOT NULL,
+    unidad_medida NVARCHAR(30) NOT NULL CONSTRAINT DF_Repuestos_unidad DEFAULT 'Unidad',
+    cantidad_disponible INT NOT NULL CONSTRAINT DF_Repuestos_cantidad DEFAULT 0,
+    stock_minimo INT NOT NULL CONSTRAINT DF_Repuestos_stock_minimo DEFAULT 0,
+    costo_unitario DECIMAL(10,2) NOT NULL CONSTRAINT DF_Repuestos_costo DEFAULT 0.00,
+    estado NVARCHAR(20) NOT NULL CONSTRAINT DF_Repuestos_estado DEFAULT 'Activo',
 
-    IF EXISTS (
-        SELECT 1
-        FROM inserted i
-        INNER JOIN Repuestos r ON i.id_repuesto = r.id_repuesto
-        WHERE i.cantidad_usada > r.cantidad_disponible
-    )
-    BEGIN
-        RAISERROR('La cantidad usada no puede superar el stock disponible del repuesto.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
-END;
+    CONSTRAINT PK_Repuestos PRIMARY KEY (id_repuesto),
+    
+    -- ¡ESTA ES LA CLAVE! Impide físicamente que el stock baje de cero
+    CONSTRAINT CK_Repuestos_cantidad_no_negativa CHECK (cantidad_disponible >= 0),
+    
+    CONSTRAINT CK_Repuestos_stock_minimo CHECK (stock_minimo >= 0),
+    CONSTRAINT CK_Repuestos_costo CHECK (costo_unitario >= 0.00),
+    CONSTRAINT CK_Repuestos_estado CHECK (estado IN ('Activo', 'Inactivo'))
+);
+GO
+
+/* ============================================================
+  TABLA: Detalle_Orden_Repuesto
+   ============================================================ */
+CREATE TABLE Detalle_Orden_Repuesto (
+    id_orden CHAR(4) NOT NULL,
+    id_repuesto CHAR(4) NOT NULL,
+    cantidad_usada INT NOT NULL,
+
+    CONSTRAINT PK_Detalle_Orden_Repuesto PRIMARY KEY (id_orden, id_repuesto),
+    CONSTRAINT FK_Detalle_Orden FOREIGN KEY (id_orden)
+        REFERENCES Ordenes_de_Trabajo(id_orden)
+        ON UPDATE CASCADE
+        ON DELETE NO ACTION,
+    CONSTRAINT FK_Detalle_Repuesto FOREIGN KEY (id_repuesto)
+        REFERENCES Repuestos(id_repuesto)
+        ON UPDATE CASCADE
+        ON DELETE NO ACTION,
+    CONSTRAINT CK_Detalle_cantidad_usada CHECK (cantidad_usada >= 1)
+);
 GO
 
 /* ============================================================
