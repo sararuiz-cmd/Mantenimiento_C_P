@@ -347,25 +347,40 @@ GO
 /* ============================================================
    TRIGGER 2: Valida que el piso del aula no supere los pisos del edificio.
    ============================================================ */
-CREATE TRIGGER TR_Aula_ValidarPisoEdificio
-ON Aula
-AFTER INSERT, UPDATE
-AS
-BEGIN
-    SET NOCOUNT ON;
+/* ============================================================
+   TABLA: Edificio
+   Cardinalidad: Edificio 1 ---- N Aula
+   ============================================================ */
+CREATE TABLE Edificio (
+    id_edificio CHAR(5) NOT NULL,
+    nombre_edificio NVARCHAR(50) NOT NULL,
+    cantidad_pisos INT NOT NULL,
 
-    IF EXISTS (
-        SELECT 1
-        FROM inserted i
-        INNER JOIN Edificio e ON i.id_edificio = e.id_edificio
-        WHERE i.piso > e.cantidad_pisos
-    )
-    BEGIN
-        RAISERROR('El piso del aula no puede ser mayor que la cantidad de pisos del edificio.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
-END;
+    CONSTRAINT PK_Edificio PRIMARY KEY (id_edificio),
+    CONSTRAINT CK_Edificio_cantidad_pisos CHECK (cantidad_pisos > 0)
+);
+GO
+
+/* ============================================================
+   TABLA: Aula
+   Cardinalidad: Aula N ---- 1 Edificio
+   ============================================================ */
+CREATE TABLE Aula (
+    aula_id CHAR(6) NOT NULL,
+    referencia NVARCHAR(100) NOT NULL,
+    estado_aula NVARCHAR(20) NOT NULL CONSTRAINT DF_Aula_estado DEFAULT 'Activa',
+    id_edificio CHAR(5) NOT NULL,
+    piso INT NOT NULL,
+
+    CONSTRAINT PK_Aula PRIMARY KEY (aula_id),
+    CONSTRAINT FK_Aula_Edificio FOREIGN KEY (id_edificio)
+        REFERENCES Edificio(id_edificio)
+        ON UPDATE CASCADE
+        ON DELETE NO ACTION,
+    CONSTRAINT CK_Aula_estado CHECK (estado_aula IN ('Activa', 'Inactiva')),
+    -- Control nativo simple: evita errores de dedo como números negativos
+    CONSTRAINT CK_Aula_piso_positivo CHECK (piso >= 0) 
+);
 GO
 
 /* ============================================================
