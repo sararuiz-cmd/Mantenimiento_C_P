@@ -316,25 +316,32 @@ GO
    TRIGGER 1: Valida que el usuario asignado como técnico tenga rol Técnico.
    En los datos simulados, R002 corresponde al rol Técnico.
    ============================================================ */
-CREATE TRIGGER TR_Tecnicos_ValidarRolTecnico
-ON Tecnicos
-AFTER INSERT, UPDATE
-AS
-BEGIN
-    SET NOCOUNT ON;
+ALTER TABLE Usuarios 
+ADD CONSTRAINT UQ_Usuarios_Id_Rol UNIQUE (id_usuario, id_rol);
+GO
 
-    IF EXISTS (
-        SELECT 1
-        FROM inserted i
-        INNER JOIN Usuarios u ON i.id_usuario = u.id_usuario
-        WHERE u.id_rol <> 'R002'
-    )
-    BEGIN
-        RAISERROR('El usuario asignado como técnico debe tener el rol Técnico.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
-END;
+-- Nueva estructura de la tabla Tecnicos
+CREATE TABLE Tecnicos (
+    id_tecnico CHAR(4) NOT NULL,
+    id_usuario CHAR(4) NOT NULL,
+    id_rol CHAR(4) NOT NULL CONSTRAINT DF_Tecnicos_rol DEFAULT 'R002', -- Forzamos el rol
+    especialidad NVARCHAR(50) NOT NULL,
+    disponibilidad NVARCHAR(20) NOT NULL CONSTRAINT DF_Tecnicos_disponibilidad DEFAULT 'Disponible',
+    estado_tecnico NVARCHAR(20) NOT NULL CONSTRAINT DF_Tecnicos_estado DEFAULT 'Activo',
+
+    CONSTRAINT PK_Tecnicos PRIMARY KEY (id_tecnico),
+    CONSTRAINT UQ_Tecnicos_id_usuario UNIQUE (id_usuario),
+    
+    CONSTRAINT CK_Tecnicos_SoloRolTecnico CHECK (id_rol = 'R002'),
+    
+    CONSTRAINT FK_Tecnicos_Usuarios_Rol FOREIGN KEY (id_usuario, id_rol)
+        REFERENCES Usuarios(id_usuario, id_rol)
+        ON UPDATE CASCADE
+        ON DELETE NO ACTION,
+        
+    CONSTRAINT CK_Tecnicos_disponibilidad CHECK (disponibilidad IN ('Disponible', 'Ocupado', 'No disponible')),
+    CONSTRAINT CK_Tecnicos_estado CHECK (estado_tecnico IN ('Activo', 'Inactivo'))
+);
 GO
 
 /* ============================================================
