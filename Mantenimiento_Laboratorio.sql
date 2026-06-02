@@ -36,6 +36,11 @@ CREATE TABLE Roles (
     id_rol CHAR(4) NOT NULL,
     nombre_rol NVARCHAR(30) NOT NULL,
     descripcion_rol NVARCHAR(150) NULL,
+    
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Roles PRIMARY KEY (id_rol),
     CONSTRAINT UQ_Roles_nombre_rol UNIQUE (nombre_rol)
