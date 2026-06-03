@@ -265,54 +265,50 @@ GO
    - Usuarios 1 ---- N Ordenes_de_Trabajo como usuario reportante.
    ============================================================ */
 CREATE TABLE Ordenes_de_Trabajo (
-    id_orden CHAR(4) NOT NULL,
-    id_equipo CHAR(5) NOT NULL,
-    id_tecnico CHAR(4) NOT NULL,
-    id_falla CHAR(4) NULL,
-    tipo_mantenimiento NVARCHAR(20) NOT NULL,
-    prioridad_orden NVARCHAR(20) NOT NULL CONSTRAINT DF_Ordenes_prioridad DEFAULT 'Media',
-    fecha_creacion DATE NOT NULL,
-    estado_orden NVARCHAR(30) NOT NULL CONSTRAINT DF_Ordenes_estado DEFAULT 'Programada',
-    diagnostico NVARCHAR(255) NULL,
-    actividades_realizadas NVARCHAR(255) NULL,
-    resultado_final NVARCHAR(255) NULL,
-    fecha_cierre DATE NULL,
-    id_usuario_reporta CHAR(4) NOT NULL,
-    
-    -- Auditoría
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME NULL,
-    deleted_at DATETIME NULL,
+    id_orden               CHAR(4)        NOT NULL,
+    id_equipo              CHAR(5)        NOT NULL,
+    id_tecnico             CHAR(4)        NOT NULL,
+    id_falla               CHAR(4)         NULL,
+    tipo_mantenimiento     NVARCHAR(20)   NOT NULL,
+    prioridad_orden        NVARCHAR(20)   NOT NULL DEFAULT 'Media',
+    fecha_creacion         DATE           NOT NULL,
+    estado_orden           NVARCHAR(30)   NOT NULL DEFAULT 'Programada',
+    diagnostico            NVARCHAR(255)   NULL,
+    actividades_realizadas NVARCHAR(255)   NULL,
+    resultado_final        NVARCHAR(255)   NULL,
+    fecha_cierre           DATE            NULL,
+    id_usuario_reporta     CHAR(4)        NOT NULL,
+    created_at             DATETIME                DEFAULT GETDATE(),
+    updated_at             DATETIME        NULL,
+    deleted_at             DATETIME        NULL,
 
-    CONSTRAINT PK_Ordenes_de_Trabajo PRIMARY KEY (id_orden),
-    CONSTRAINT FK_Ordenes_Equipos FOREIGN KEY (id_equipo)
-        REFERENCES Equipos(id_equipo)
-        ON UPDATE CASCADE
+    -- RESTRICCIONES (PK, FK, CK)
+    CONSTRAINT PK_Ordenes_de_Trabajo 
+        PRIMARY KEY (id_orden),
+    CONSTRAINT FK_Ordenes_Equipos 
+        FOREIGN KEY (id_equipo) REFERENCES Equipos(id_equipo) 
+        ON UPDATE CASCADE 
         ON DELETE NO ACTION,
-    CONSTRAINT FK_Ordenes_Tecnicos FOREIGN KEY (id_tecnico)
-        REFERENCES Tecnicos(id_tecnico)
-        ON UPDATE CASCADE
+    CONSTRAINT FK_Ordenes_Tecnicos 
+        FOREIGN KEY (id_tecnico) REFERENCES Tecnicos(id_tecnico) 
+        ON UPDATE CASCADE 
         ON DELETE NO ACTION,
-    CONSTRAINT FK_Ordenes_Usuarios_Reporta FOREIGN KEY (id_usuario_reporta)
-        REFERENCES Usuarios(id_usuario)
-        ON UPDATE NO ACTION
+    CONSTRAINT FK_Ordenes_Usuarios_Reporta 
+        FOREIGN KEY (id_usuario_reporta) REFERENCES Usuarios(id_usuario) 
+        ON UPDATE NO ACTION 
         ON DELETE NO ACTION,
-    CONSTRAINT CK_Ordenes_tipo_mantenimiento CHECK (tipo_mantenimiento IN ('Preventivo', 'Correctivo')),
-    CONSTRAINT CK_Ordenes_prioridad CHECK (prioridad_orden IN ('Baja', 'Media', 'Alta')),
-    CONSTRAINT CK_Ordenes_estado CHECK (estado_orden IN ('Programada', 'En proceso', 'Cerrada')),
-    CONSTRAINT CK_Ordenes_fecha_cierre CHECK (
-        fecha_cierre IS NULL OR fecha_cierre >= fecha_creacion
-    ),
-    CONSTRAINT CK_Ordenes_falla_segun_tipo CHECK (
-        (tipo_mantenimiento = 'Correctivo' AND id_falla IS NOT NULL)
-        OR
-        (tipo_mantenimiento = 'Preventivo' AND id_falla IS NULL)
-    ),
-    CONSTRAINT CK_Ordenes_cierre_obligatorio CHECK (
-        (estado_orden = 'Cerrada' AND fecha_cierre IS NOT NULL AND diagnostico IS NOT NULL AND resultado_final IS NOT NULL)
-        OR
-        (estado_orden <> 'Cerrada' AND fecha_cierre IS NULL)
-    )
+    CONSTRAINT CK_Ordenes_tipo_mantenimiento 
+        CHECK (tipo_mantenimiento IN ('Preventivo', 'Correctivo')),
+    CONSTRAINT CK_Ordenes_prioridad 
+        CHECK (prioridad_orden IN ('Baja', 'Media', 'Alta')),
+    CONSTRAINT CK_Ordenes_estado 
+        CHECK (estado_orden IN ('Programada', 'En proceso', 'Cerrada')),
+    CONSTRAINT CK_Ordenes_fecha_cierre 
+        CHECK (fecha_cierre IS NULL OR fecha_cierre >= fecha_creacion),
+    CONSTRAINT CK_Ordenes_falla_segun_tipo 
+        CHECK ((tipo_mantenimiento = 'Correctivo' AND id_falla IS NOT NULL) OR (tipo_mantenimiento = 'Preventivo' AND id_falla IS NULL)),
+    CONSTRAINT CK_Ordenes_cierre_obligatorio 
+        CHECK ((estado_orden = 'Cerrada' AND fecha_cierre IS NOT NULL AND diagnostico IS NOT NULL AND resultado_final IS NOT NULL) OR (estado_orden <> 'Cerrada' AND fecha_cierre IS NULL))
 );
 GO
 
