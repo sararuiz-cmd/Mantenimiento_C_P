@@ -218,38 +218,39 @@ GO
    - Modelos 1 ---- N Equipos.
    ============================================================ */
 CREATE TABLE Equipos (
-    id_equipo CHAR(5) NOT NULL,
-    aula_id CHAR(6) NOT NULL,
-    numero_serie NVARCHAR(50) NOT NULL,
-    id_modelo CHAR(6) NOT NULL,
-    criticidad NVARCHAR(20) NOT NULL CONSTRAINT DF_Equipos_criticidad DEFAULT 'Media',
-    fecha_adquisicion DATE NOT NULL,
-    estado_equipo NVARCHAR(30) NOT NULL CONSTRAINT DF_Equipos_estado DEFAULT 'Activo',
-    fecha_fuera_servicio DATE NULL,
-    
-    -- Auditoría
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME NULL,
-    deleted_at DATETIME NULL,
+    id_equipo              CHAR(5)        NOT NULL,
+    aula_id                CHAR(6)        NOT NULL,
+    numero_serie           NVARCHAR(50)   NOT NULL,
+    id_modelo              CHAR(6)        NOT NULL,
+    criticidad             NVARCHAR(20)   NOT NULL DEFAULT 'Media',
+    fecha_adquisicion      DATE           NOT NULL,
+    estado_equipo          NVARCHAR(30)   NOT NULL DEFAULT 'Activo',
+    fecha_fuera_servicio   DATE            NULL,
+    created_at             DATETIME                DEFAULT GETDATE(),
+    updated_at             DATETIME        NULL,
+    deleted_at             DATETIME        NULL,
 
-    CONSTRAINT PK_Equipos PRIMARY KEY (id_equipo),
-    CONSTRAINT UQ_Equipos_numero_serie UNIQUE (numero_serie),
-    CONSTRAINT FK_Equipos_Aula FOREIGN KEY (aula_id)
-        REFERENCES Aula(aula_id)
-        ON UPDATE CASCADE
+    -- RESTRICCIONES (PK, UQ, FK, CK)
+    CONSTRAINT PK_Equipos 
+        PRIMARY KEY (id_equipo),
+    CONSTRAINT UQ_Equipos_numero_serie 
+        UNIQUE (numero_serie),
+    CONSTRAINT FK_Equipos_Aula 
+        FOREIGN KEY (aula_id) REFERENCES Aula(aula_id) 
+        ON UPDATE CASCADE 
         ON DELETE NO ACTION,
-    CONSTRAINT FK_Equipos_Modelos FOREIGN KEY (id_modelo)
-        REFERENCES Modelos(id_modelo)
-        ON UPDATE CASCADE
+    CONSTRAINT FK_Equipos_Modelos 
+        FOREIGN KEY (id_modelo) REFERENCES Modelos(id_modelo) 
+        ON UPDATE CASCADE 
         ON DELETE NO ACTION,
-    CONSTRAINT CK_Equipos_criticidad CHECK (criticidad IN ('Baja', 'Media', 'Alta')),
-    CONSTRAINT CK_Equipos_estado CHECK (estado_equipo IN ('Activo', 'Inactivo', 'Fuera de servicio')),
-    CONSTRAINT CK_Equipos_fecha_fuera_servicio CHECK (
-        fecha_fuera_servicio IS NULL OR fecha_fuera_servicio >= fecha_adquisicion
-    ),
-    CONSTRAINT CK_Equipos_activo_sin_fecha_baja CHECK (
-        estado_equipo <> 'Activo' OR fecha_fuera_servicio IS NULL
-    )
+    CONSTRAINT CK_Equipos_criticidad 
+        CHECK (criticidad IN ('Baja', 'Media', 'Alta')),
+    CONSTRAINT CK_Equipos_estado 
+        CHECK (estado_equipo IN ('Activo', 'Inactivo', 'Fuera de servicio')),
+    CONSTRAINT CK_Equipos_fecha_fuera_servicio 
+        CHECK (fecha_fuera_servicio IS NULL OR fecha_fuera_servicio >= fecha_adquisicion),
+    CONSTRAINT CK_Equipos_activo_sin_fecha_baja 
+        CHECK (estado_equipo <> 'Activo' OR fecha_fuera_servicio IS NULL)
 );
 GO
 
