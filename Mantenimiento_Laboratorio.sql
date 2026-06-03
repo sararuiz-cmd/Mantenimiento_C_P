@@ -318,25 +318,29 @@ GO
    Se resuelve con Detalle_Orden_Repuesto.
    ============================================================ */
 CREATE TABLE Repuestos (
-    id_repuesto CHAR(4) NOT NULL,
-    nombre_repuesto NVARCHAR(100) NOT NULL,
-    categoria NVARCHAR(50) NOT NULL,
-    unidad_medida NVARCHAR(30) NOT NULL CONSTRAINT DF_Repuestos_unidad DEFAULT 'Unidad',
-    cantidad_disponible INT NOT NULL CONSTRAINT DF_Repuestos_cantidad DEFAULT 0,
-    stock_minimo INT NOT NULL CONSTRAINT DF_Repuestos_stock_minimo DEFAULT 0,
-    costo_unitario DECIMAL(10,2) NOT NULL CONSTRAINT DF_Repuestos_costo DEFAULT 0.00,
-    estado NVARCHAR(20) NOT NULL CONSTRAINT DF_Repuestos_estado DEFAULT 'Activo',
-    
-    -- Auditoría
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME NULL,
-    deleted_at DATETIME NULL,
+    id_repuesto            CHAR(4)        NOT NULL,
+    nombre_repuesto        NVARCHAR(100)  NOT NULL,
+    categoria              NVARCHAR(50)   NOT NULL,
+    unidad_medida          NVARCHAR(30)   NOT NULL DEFAULT 'Unidad',
+    cantidad_disponible    INT            NOT NULL DEFAULT 0,
+    stock_minimo           INT            NOT NULL DEFAULT 0,
+    costo_unitario         DECIMAL(10,2)  NOT NULL DEFAULT 0.00,
+    estado                 NVARCHAR(20)   NOT NULL DEFAULT 'Activo',
+    created_at             DATETIME                DEFAULT GETDATE(),
+    updated_at             DATETIME        NULL,
+    deleted_at             DATETIME        NULL,
 
-    CONSTRAINT PK_Repuestos PRIMARY KEY (id_repuesto),
-    CONSTRAINT CK_Repuestos_cantidad_no_negativa CHECK (cantidad_disponible >= 0),
-    CONSTRAINT CK_Repuestos_stock_minimo CHECK (stock_minimo >= 0),
-    CONSTRAINT CK_Repuestos_costo CHECK (costo_unitario >= 0.00),
-    CONSTRAINT CK_Repuestos_estado CHECK (estado IN ('Activo', 'Inactivo'))
+    -- RESTRICCIONES (PK, CK)
+    CONSTRAINT PK_Repuestos 
+        PRIMARY KEY (id_repuesto),
+    CONSTRAINT CK_Repuestos_cantidad_no_negativa 
+        CHECK (cantidad_disponible >= 0),
+    CONSTRAINT CK_Repuestos_stock_minimo 
+        CHECK (stock_minimo >= 0),
+    CONSTRAINT CK_Repuestos_costo 
+        CHECK (costo_unitario >= 0.00),
+    CONSTRAINT CK_Repuestos_estado 
+        CHECK (estado IN ('Activo', 'Inactivo'))
 );
 GO  
 /* ============================================================
