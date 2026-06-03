@@ -166,29 +166,31 @@ GO
      Decisión aplicada: un aula tendrá como máximo un laboratorio.
    ============================================================ */
 CREATE TABLE Laboratorios (
-    id_laboratorio CHAR(4) NOT NULL,
-    nombre_laboratorio NVARCHAR(100) NOT NULL,
-    descripcion NVARCHAR(255) NULL,
-    id_responsable CHAR(4) NOT NULL,
-    estado_laboratorio NVARCHAR(20) NOT NULL CONSTRAINT DF_Laboratorios_estado DEFAULT 'Activo',
-    aula_id CHAR(6) NOT NULL,
-    
-    -- Auditoría
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME NULL,
-    deleted_at DATETIME NULL,
+    id_laboratorio         CHAR(4)        NOT NULL,
+    nombre_laboratorio     NVARCHAR(100)  NOT NULL,
+    descripcion            NVARCHAR(255)   NULL,
+    id_responsable         CHAR(4)        NOT NULL,
+    estado_laboratorio     NVARCHAR(20)   NOT NULL DEFAULT 'Activo',
+    aula_id                CHAR(6)        NOT NULL,
+    created_at             DATETIME                DEFAULT GETDATE(),
+    updated_at             DATETIME        NULL,
+    deleted_at             DATETIME        NULL,
 
-    CONSTRAINT PK_Laboratorios PRIMARY KEY (id_laboratorio),
-    CONSTRAINT FK_Laboratorios_Usuarios FOREIGN KEY (id_responsable)
-        REFERENCES Usuarios(id_usuario)
-        ON UPDATE NO ACTION
+    -- RESTRICCIONES (PK, UQ, FK, CK)
+    CONSTRAINT PK_Laboratorios 
+        PRIMARY KEY (id_laboratorio),
+    CONSTRAINT UQ_Laboratorios_aula_id 
+        UNIQUE (aula_id),
+    CONSTRAINT FK_Laboratorios_Usuarios 
+        FOREIGN KEY (id_responsable) REFERENCES Usuarios(id_usuario) 
+        ON UPDATE NO ACTION 
         ON DELETE NO ACTION,
-    CONSTRAINT FK_Laboratorios_Aula FOREIGN KEY (aula_id)
-        REFERENCES Aula(aula_id)
-        ON UPDATE CASCADE
+    CONSTRAINT FK_Laboratorios_Aula 
+        FOREIGN KEY (aula_id) REFERENCES Aula(aula_id) 
+        ON UPDATE CASCADE 
         ON DELETE NO ACTION,
-    CONSTRAINT UQ_Laboratorios_aula_id UNIQUE (aula_id),
-    CONSTRAINT CK_Laboratorios_estado CHECK (estado_laboratorio IN ('Activo', 'Inactivo'))
+    CONSTRAINT CK_Laboratorios_estado 
+        CHECK (estado_laboratorio IN ('Activo', 'Inactivo'))
 );
 GO
 /* ============================================================
