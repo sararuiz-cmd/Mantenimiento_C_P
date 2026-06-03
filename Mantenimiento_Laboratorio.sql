@@ -36,6 +36,11 @@ CREATE TABLE Roles (
     id_rol CHAR(4) NOT NULL,
     nombre_rol NVARCHAR(30) NOT NULL,
     descripcion_rol NVARCHAR(150) NULL,
+    
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Roles PRIMARY KEY (id_rol),
     CONSTRAINT UQ_Roles_nombre_rol UNIQUE (nombre_rol)
@@ -80,27 +85,31 @@ GO
    Un usuario solo puede aparecer una vez como técnico.
    ============================================================ */
 CREATE TABLE Tecnicos (
-    id_tecnico CHAR(4) NOT NULL,
-    id_usuario CHAR(4) NOT NULL,
-    id_rol CHAR(4) NOT NULL CONSTRAINT DF_Tecnicos_rol DEFAULT 'R002',
-    especialidad NVARCHAR(50) NOT NULL,
-    disponibilidad NVARCHAR(20) NOT NULL CONSTRAINT DF_Tecnicos_disponibilidad DEFAULT 'Disponible',
-    estado_tecnico NVARCHAR(20) NOT NULL CONSTRAINT DF_Tecnicos_estado DEFAULT 'Activo',
-    
-    -- Auditoría
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME NULL,
-    deleted_at DATETIME NULL,
+    id_tecnico             CHAR(4)        NOT NULL,
+    id_usuario             CHAR(4)        NOT NULL,
+    id_rol                 CHAR(4)        NOT NULL DEFAULT 'R002',
+    especialidad           NVARCHAR(50)   NOT NULL,
+    disponibilidad         NVARCHAR(20)   NOT NULL DEFAULT 'Disponible',
+    estado_tecnico         NVARCHAR(20)   NOT NULL DEFAULT 'Activo',
+    created_at             DATETIME                DEFAULT GETDATE(),
+    updated_at             DATETIME        NULL,
+    deleted_at             DATETIME        NULL,
 
-    CONSTRAINT PK_Tecnicos PRIMARY KEY (id_tecnico),
-    CONSTRAINT UQ_Tecnicos_id_usuario UNIQUE (id_usuario),
-    CONSTRAINT CK_Tecnicos_SoloRolTecnico CHECK (id_rol = 'R002'),
-    CONSTRAINT FK_Tecnicos_Usuarios_Rol FOREIGN KEY (id_usuario, id_rol)
-        REFERENCES Usuarios(id_usuario, id_rol)
-        ON UPDATE CASCADE
+    -- RESTRICCIONES (PK, UQ, FK, CK)
+    CONSTRAINT PK_Tecnicos 
+        PRIMARY KEY (id_tecnico),
+    CONSTRAINT UQ_Tecnicos_id_usuario 
+        UNIQUE (id_usuario),
+    CONSTRAINT CK_Tecnicos_SoloRolTecnico 
+        CHECK (id_rol = 'R002'),
+    CONSTRAINT FK_Tecnicos_Usuarios_Rol 
+        FOREIGN KEY (id_usuario, id_rol) REFERENCES Usuarios(id_usuario, id_rol) 
+        ON UPDATE CASCADE 
         ON DELETE NO ACTION,
-    CONSTRAINT CK_Tecnicos_disponibilidad CHECK (disponibilidad IN ('Disponible', 'Ocupado', 'No disponible')),
-    CONSTRAINT CK_Tecnicos_estado CHECK (estado_tecnico IN ('Activo', 'Inactivo'))
+    CONSTRAINT CK_Tecnicos_disponibilidad 
+        CHECK (disponibilidad IN ('Disponible', 'Ocupado', 'No disponible')),
+    CONSTRAINT CK_Tecnicos_estado 
+        CHECK (estado_tecnico IN ('Activo', 'Inactivo'))
 );
 GO
 /* ============================================================
@@ -108,17 +117,18 @@ GO
    Cardinalidad: Edificio 1 ---- N Aula
    ============================================================ */
 CREATE TABLE Edificio (
-    id_edificio CHAR(5) NOT NULL,
-    nombre_edificio NVARCHAR(50) NOT NULL,
-    amount_pisos INT NOT NULL, -- Nota: cantidad_pisos cambiado para evitar conflictos si aplica
+    id_edificio            CHAR(5)        NOT NULL,
+    nombre_edificio        NVARCHAR(50)   NOT NULL,
+    amount_pisos           INT            NOT NULL,
+    created_at             DATETIME                DEFAULT GETDATE(),
+    updated_at             DATETIME        NULL,
+    deleted_at             DATETIME        NULL,
 
-    -- Auditoría
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME NULL,
-    deleted_at DATETIME NULL,
-
-    CONSTRAINT PK_Edificio PRIMARY KEY (id_edificio),
-    CONSTRAINT CK_Edificio_cantidad_pisos CHECK (amount_pisos > 0)
+    -- RESTRICCIONES (PK, CK)
+    CONSTRAINT PK_Edificio 
+        PRIMARY KEY (id_edificio),
+    CONSTRAINT CK_Edificio_cantidad_pisos 
+        CHECK (amount_pisos > 0)
 );
 GO
 /* ============================================================
