@@ -60,9 +60,15 @@ CREATE TABLE Usuarios (
     contrasena_hash NVARCHAR(255) NOT NULL,
     id_rol CHAR(4) NOT NULL,
     estado_usuario NVARCHAR(20) NOT NULL CONSTRAINT DF_Usuarios_estado DEFAULT 'Activo',
+    
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Usuarios PRIMARY KEY (id_usuario),
     CONSTRAINT UQ_Usuarios_correo UNIQUE (correo),
+    CONSTRAINT UQ_Usuarios_Id_Rol UNIQUE (id_usuario, id_rol), -- Necesario para la FK compuesta en Técnicos
     CONSTRAINT FK_Usuarios_Roles FOREIGN KEY (id_rol)
         REFERENCES Roles(id_rol)
         ON UPDATE CASCADE
@@ -81,21 +87,27 @@ GO
 CREATE TABLE Tecnicos (
     id_tecnico CHAR(4) NOT NULL,
     id_usuario CHAR(4) NOT NULL,
+    id_rol CHAR(4) NOT NULL CONSTRAINT DF_Tecnicos_rol DEFAULT 'R002',
     especialidad NVARCHAR(50) NOT NULL,
     disponibilidad NVARCHAR(20) NOT NULL CONSTRAINT DF_Tecnicos_disponibilidad DEFAULT 'Disponible',
     estado_tecnico NVARCHAR(20) NOT NULL CONSTRAINT DF_Tecnicos_estado DEFAULT 'Activo',
+    
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Tecnicos PRIMARY KEY (id_tecnico),
     CONSTRAINT UQ_Tecnicos_id_usuario UNIQUE (id_usuario),
-    CONSTRAINT FK_Tecnicos_Usuarios FOREIGN KEY (id_usuario)
-        REFERENCES Usuarios(id_usuario)
+    CONSTRAINT CK_Tecnicos_SoloRolTecnico CHECK (id_rol = 'R002'),
+    CONSTRAINT FK_Tecnicos_Usuarios_Rol FOREIGN KEY (id_usuario, id_rol)
+        REFERENCES Usuarios(id_usuario, id_rol)
         ON UPDATE CASCADE
         ON DELETE NO ACTION,
     CONSTRAINT CK_Tecnicos_disponibilidad CHECK (disponibilidad IN ('Disponible', 'Ocupado', 'No disponible')),
     CONSTRAINT CK_Tecnicos_estado CHECK (estado_tecnico IN ('Activo', 'Inactivo'))
 );
 GO
-
 /* ============================================================
    4. TABLA: Edificio
    Cardinalidad: Edificio 1 ---- N Aula
@@ -103,13 +115,17 @@ GO
 CREATE TABLE Edificio (
     id_edificio CHAR(5) NOT NULL,
     nombre_edificio NVARCHAR(50) NOT NULL,
-    cantidad_pisos INT NOT NULL,
+    amount_pisos INT NOT NULL, -- Nota: cantidad_pisos cambiado para evitar conflictos si aplica
+
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Edificio PRIMARY KEY (id_edificio),
-    CONSTRAINT CK_Edificio_cantidad_pisos CHECK (cantidad_pisos > 0)
+    CONSTRAINT CK_Edificio_cantidad_pisos CHECK (amount_pisos > 0)
 );
 GO
-
 /* ============================================================
    5. TABLA: Aula
    Cardinalidad: Aula N ---- 1 Edificio
@@ -120,6 +136,11 @@ CREATE TABLE Aula (
     estado_aula NVARCHAR(20) NOT NULL CONSTRAINT DF_Aula_estado DEFAULT 'Activa',
     id_edificio CHAR(5) NOT NULL,
     piso INT NOT NULL,
+    
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Aula PRIMARY KEY (aula_id),
     CONSTRAINT FK_Aula_Edificio FOREIGN KEY (id_edificio)
@@ -127,7 +148,7 @@ CREATE TABLE Aula (
         ON UPDATE CASCADE
         ON DELETE NO ACTION,
     CONSTRAINT CK_Aula_estado CHECK (estado_aula IN ('Activa', 'Inactiva')),
-    CONSTRAINT CK_Aula_piso CHECK (piso >= 0)
+    CONSTRAINT CK_Aula_piso_positivo CHECK (piso >= 0) 
 );
 GO
 
@@ -145,6 +166,11 @@ CREATE TABLE Laboratorios (
     id_responsable CHAR(4) NOT NULL,
     estado_laboratorio NVARCHAR(20) NOT NULL CONSTRAINT DF_Laboratorios_estado DEFAULT 'Activo',
     aula_id CHAR(6) NOT NULL,
+    
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Laboratorios PRIMARY KEY (id_laboratorio),
     CONSTRAINT FK_Laboratorios_Usuarios FOREIGN KEY (id_responsable)
@@ -159,7 +185,6 @@ CREATE TABLE Laboratorios (
     CONSTRAINT CK_Laboratorios_estado CHECK (estado_laboratorio IN ('Activo', 'Inactivo'))
 );
 GO
-
 /* ============================================================
    7. TABLA: Modelos
    Marca está fusionada dentro de Modelos.
@@ -169,11 +194,15 @@ CREATE TABLE Modelos (
     id_modelo CHAR(6) NOT NULL,
     nombre_modelo NVARCHAR(100) NOT NULL,
     marca NVARCHAR(50) NOT NULL,
+    
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Modelos PRIMARY KEY (id_modelo)
 );
 GO
-
 /* ============================================================
    8. TABLA: Equipos
    Cardinalidad:
@@ -189,6 +218,11 @@ CREATE TABLE Equipos (
     fecha_adquisicion DATE NOT NULL,
     estado_equipo NVARCHAR(30) NOT NULL CONSTRAINT DF_Equipos_estado DEFAULT 'Activo',
     fecha_fuera_servicio DATE NULL,
+    
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Equipos PRIMARY KEY (id_equipo),
     CONSTRAINT UQ_Equipos_numero_serie UNIQUE (numero_serie),
@@ -235,6 +269,11 @@ CREATE TABLE Ordenes_de_Trabajo (
     resultado_final NVARCHAR(255) NULL,
     fecha_cierre DATE NULL,
     id_usuario_reporta CHAR(4) NOT NULL,
+    
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Ordenes_de_Trabajo PRIMARY KEY (id_orden),
     CONSTRAINT FK_Ordenes_Equipos FOREIGN KEY (id_equipo)
@@ -282,15 +321,19 @@ CREATE TABLE Repuestos (
     stock_minimo INT NOT NULL CONSTRAINT DF_Repuestos_stock_minimo DEFAULT 0,
     costo_unitario DECIMAL(10,2) NOT NULL CONSTRAINT DF_Repuestos_costo DEFAULT 0.00,
     estado NVARCHAR(20) NOT NULL CONSTRAINT DF_Repuestos_estado DEFAULT 'Activo',
+    
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Repuestos PRIMARY KEY (id_repuesto),
-    CONSTRAINT CK_Repuestos_cantidad CHECK (cantidad_disponible >= 0),
+    CONSTRAINT CK_Repuestos_cantidad_no_negativa CHECK (cantidad_disponible >= 0),
     CONSTRAINT CK_Repuestos_stock_minimo CHECK (stock_minimo >= 0),
     CONSTRAINT CK_Repuestos_costo CHECK (costo_unitario >= 0.00),
     CONSTRAINT CK_Repuestos_estado CHECK (estado IN ('Activo', 'Inactivo'))
 );
-GO
-
+GO  
 /* ============================================================
    11. TABLA: Detalle_Orden_Repuesto
    Cardinalidad:
@@ -303,6 +346,11 @@ CREATE TABLE Detalle_Orden_Repuesto (
     id_orden CHAR(4) NOT NULL,
     id_repuesto CHAR(4) NOT NULL,
     cantidad_usada INT NOT NULL,
+    
+    -- Auditoría
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Detalle_Orden_Repuesto PRIMARY KEY (id_orden, id_repuesto),
     CONSTRAINT FK_Detalle_Orden FOREIGN KEY (id_orden)
@@ -316,7 +364,6 @@ CREATE TABLE Detalle_Orden_Repuesto (
     CONSTRAINT CK_Detalle_cantidad_usada CHECK (cantidad_usada >= 1)
 );
 GO
-
 /* ============================================================
    TRIGGER 1: Valida que el usuario asignado como técnico tenga rol Técnico.
    En los datos simulados, R002 corresponde al rol Técnico.
