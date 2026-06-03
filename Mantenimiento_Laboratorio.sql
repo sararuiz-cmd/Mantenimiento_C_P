@@ -199,16 +199,16 @@ GO
    Cardinalidad: Modelos 1 ---- N Equipos
    ============================================================ */
 CREATE TABLE Modelos (
-    id_modelo CHAR(6) NOT NULL,
-    nombre_modelo NVARCHAR(100) NOT NULL,
-    marca NVARCHAR(50) NOT NULL,
-    
-    -- Auditoría
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME NULL,
-    deleted_at DATETIME NULL,
+    id_modelo              CHAR(6)        NOT NULL,
+    nombre_modelo          NVARCHAR(100)  NOT NULL,
+    marca                  NVARCHAR(50)   NOT NULL,
+    created_at             DATETIME                DEFAULT GETDATE(),
+    updated_at             DATETIME        NULL,
+    deleted_at             DATETIME        NULL,
 
-    CONSTRAINT PK_Modelos PRIMARY KEY (id_modelo)
+    -- RESTRICCIONES (PK)
+    CONSTRAINT PK_Modelos 
+        PRIMARY KEY (id_modelo)
 );
 GO
 /* ============================================================
