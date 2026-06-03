@@ -352,28 +352,28 @@ GO
    PK compuesta: id_orden + id_repuesto.
    ============================================================ */
 CREATE TABLE Detalle_Orden_Repuesto (
-    id_orden CHAR(4) NOT NULL,
-    id_repuesto CHAR(4) NOT NULL,
-    cantidad_usada INT NOT NULL,
-    
-    -- Auditoría
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME NULL,
-    deleted_at DATETIME NULL,
+    id_orden               CHAR(4)        NOT NULL,
+    id_repuesto            CHAR(4)        NOT NULL,
+    cantidad_usada         INT            NOT NULL,
+    created_at             DATETIME                DEFAULT GETDATE(),
+    updated_at             DATETIME        NULL,
+    deleted_at             DATETIME        NULL,
 
-    CONSTRAINT PK_Detalle_Orden_Repuesto PRIMARY KEY (id_orden, id_repuesto),
-    CONSTRAINT FK_Detalle_Orden FOREIGN KEY (id_orden)
-        REFERENCES Ordenes_de_Trabajo(id_orden)
-        ON UPDATE CASCADE
+    -- RESTRICCIONES (PK, FK, CK)
+    CONSTRAINT PK_Detalle_Orden_Repuesto 
+        PRIMARY KEY (id_orden, id_repuesto),
+    CONSTRAINT FK_Detalle_Orden 
+        FOREIGN KEY (id_orden) REFERENCES Ordenes_de_Trabajo(id_orden) 
+        ON UPDATE CASCADE 
         ON DELETE NO ACTION,
-    CONSTRAINT FK_Detalle_Repuesto FOREIGN KEY (id_repuesto)
-        REFERENCES Repuestos(id_repuesto)
-        ON UPDATE CASCADE
+    CONSTRAINT FK_Detalle_Repuesto 
+        FOREIGN KEY (id_repuesto) REFERENCES Repuestos(id_repuesto) 
+        ON UPDATE CASCADE 
         ON DELETE NO ACTION,
-    CONSTRAINT CK_Detalle_cantidad_usada CHECK (cantidad_usada >= 1)
+    CONSTRAINT CK_Detalle_cantidad_usada 
+        CHECK (cantidad_usada >= 1)
 );
-GO
-/* ============================================================
+GO/* ============================================================
    TRIGGER 1: Valida que el usuario asignado como técnico tenga rol Técnico.
    En los datos simulados, R002 corresponde al rol Técnico.
    ============================================================ */
