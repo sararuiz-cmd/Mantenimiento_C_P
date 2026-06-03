@@ -136,27 +136,28 @@ GO
    Cardinalidad: Aula N ---- 1 Edificio
    ============================================================ */
 CREATE TABLE Aula (
-    aula_id CHAR(6) NOT NULL,
-    referencia NVARCHAR(100) NOT NULL,
-    estado_aula NVARCHAR(20) NOT NULL CONSTRAINT DF_Aula_estado DEFAULT 'Activa',
-    id_edificio CHAR(5) NOT NULL,
-    piso INT NOT NULL,
-    
-    -- Auditoría
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME NULL,
-    deleted_at DATETIME NULL,
+    aula_id                CHAR(6)        NOT NULL,
+    referencia             NVARCHAR(100)  NOT NULL,
+    estado_aula            NVARCHAR(20)   NOT NULL DEFAULT 'Activa',
+    id_edificio            CHAR(5)        NOT NULL,
+    piso                   INT            NOT NULL,
+    created_at             DATETIME                DEFAULT GETDATE(),
+    updated_at             DATETIME        NULL,
+    deleted_at             DATETIME        NULL,
 
-    CONSTRAINT PK_Aula PRIMARY KEY (aula_id),
-    CONSTRAINT FK_Aula_Edificio FOREIGN KEY (id_edificio)
-        REFERENCES Edificio(id_edificio)
-        ON UPDATE CASCADE
+    -- RESTRICCIONES (PK, FK, CK)
+    CONSTRAINT PK_Aula 
+        PRIMARY KEY (aula_id),
+    CONSTRAINT FK_Aula_Edificio 
+        FOREIGN KEY (id_edificio) REFERENCES Edificio(id_edificio) 
+        ON UPDATE CASCADE 
         ON DELETE NO ACTION,
-    CONSTRAINT CK_Aula_estado CHECK (estado_aula IN ('Activa', 'Inactiva')),
-    CONSTRAINT CK_Aula_piso_positivo CHECK (piso >= 0) 
+    CONSTRAINT CK_Aula_estado 
+        CHECK (estado_aula IN ('Activa', 'Inactiva')),
+    CONSTRAINT CK_Aula_piso_positivo 
+        CHECK (piso >= 0)
 );
 GO
-
 /* ============================================================
    6. TABLA: Laboratorios
    Cardinalidad:
