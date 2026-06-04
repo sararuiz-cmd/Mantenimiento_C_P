@@ -179,8 +179,8 @@ CREATE TABLE Laboratorios (
     -- RESTRICCIONES (PK, UQ, FK, CK)
     CONSTRAINT PK_Laboratorios 
         PRIMARY KEY (id_laboratorio),
-    CONSTRAINT UQ_Laboratorios_aula_id 
-        UNIQUE (aula_id),
+    CONSTRAINT UQ_Laboratorios_nombre
+    UNIQUE (nombre_laboratorio),
     CONSTRAINT FK_Laboratorios_Usuarios 
         FOREIGN KEY (id_responsable) REFERENCES Usuarios(id_usuario) 
         ON UPDATE NO ACTION 
