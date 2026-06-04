@@ -322,7 +322,7 @@ GO
 
 /* ============================================================
    INSERCIÓN DE DATOS SIMULADOS
-   Mínimo solicitado: 10 registros por tabla.
+
    ============================================================ */
 INSERT INTO Seguridad.Roles (id_rol, nombre_rol, descripcion_rol) VALUES
 ('R001', N'Administrador', N'Usuario con permisos de gestión general'),
