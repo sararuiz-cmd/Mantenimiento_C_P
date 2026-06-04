@@ -52,11 +52,7 @@ CREATE TABLE Seguridad.Roles (
 );
 GO
 
-/* ============================================================
-   2. TABLA: Usuarios
-   Cardinalidad: Usuarios N ---- 1 Roles
-   ============================================================ */
-CREATE TABLE Usuarios (
+CREATE TABLE Seguridad.Usuarios (
     id_usuario CHAR(4) NOT NULL,
     nombre NVARCHAR(50) NOT NULL,
     apellido NVARCHAR(50) NOT NULL,
@@ -64,59 +60,46 @@ CREATE TABLE Usuarios (
     telefono VARCHAR(15) NOT NULL,
     contrasena_hash NVARCHAR(255) NOT NULL,
     id_rol CHAR(4) NOT NULL,
-    estado_usuario NVARCHAR(20) NOT NULL CONSTRAINT DF_Usuarios_estado DEFAULT 'Activo',
-    
-    -- Auditoría
-    created_at DATETIME DEFAULT GETDATE(),
+    estado_usuario NVARCHAR(20) NOT NULL CONSTRAINT DF_Usuarios_estado_usuario DEFAULT N'Activo',
+    created_at DATETIME NOT NULL CONSTRAINT DF_Usuarios_created_at DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Usuarios PRIMARY KEY (id_usuario),
     CONSTRAINT UQ_Usuarios_correo UNIQUE (correo),
-    CONSTRAINT UQ_Usuarios_Id_Rol UNIQUE (id_usuario, id_rol), -- Necesario para la FK compuesta en Técnicos
-    CONSTRAINT FK_Usuarios_Roles FOREIGN KEY (id_rol)
-        REFERENCES Roles(id_rol)
-        ON UPDATE CASCADE
-        ON DELETE NO ACTION,
-    CONSTRAINT CK_Usuarios_estado CHECK (estado_usuario IN ('Activo', 'Inactivo')),
+    CONSTRAINT CK_Usuarios_id_formato CHECK (id_usuario LIKE 'U[0-9][0-9][0-9]'),
     CONSTRAINT CK_Usuarios_correo CHECK (correo LIKE '%_@_%._%'),
-    CONSTRAINT CK_Usuarios_telefono CHECK (telefono LIKE '[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]')
+    CONSTRAINT CK_Usuarios_telefono CHECK (telefono LIKE '[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]'),
+    CONSTRAINT CK_Usuarios_estado_usuario CHECK (estado_usuario IN (N'Activo', N'Inactivo')),
+    CONSTRAINT FK_Usuarios_Roles FOREIGN KEY (id_rol)
+        REFERENCES Seguridad.Roles(id_rol)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE
 );
 GO
 
-/* ============================================================
-   3. TABLA: Tecnicos
-   Cardinalidad: Usuarios 1 ---- 0..1 Tecnicos
-   Un usuario solo puede aparecer una vez como técnico.
-   ============================================================ */
-CREATE TABLE Tecnicos (
-    id_tecnico             CHAR(4)        NOT NULL,
-    id_usuario             CHAR(4)        NOT NULL,
-    id_rol                 CHAR(4)        NOT NULL DEFAULT 'R002',
-    especialidad           NVARCHAR(50)   NOT NULL,
-    disponibilidad         NVARCHAR(20)   NOT NULL DEFAULT 'Disponible',
-    estado_tecnico         NVARCHAR(20)   NOT NULL DEFAULT 'Activo',
-    created_at             DATETIME                DEFAULT GETDATE(),
-    updated_at             DATETIME        NULL,
-    deleted_at             DATETIME        NULL,
+CREATE TABLE Seguridad.Tecnicos (
+    id_tecnico CHAR(4) NOT NULL,
+    id_usuario CHAR(4) NOT NULL,
+    especialidad NVARCHAR(50) NOT NULL,
+    disponibilidad NVARCHAR(20) NOT NULL CONSTRAINT DF_Tecnicos_disponibilidad DEFAULT N'Disponible',
+    estado_tecnico NVARCHAR(20) NOT NULL CONSTRAINT DF_Tecnicos_estado_tecnico DEFAULT N'Activo',
+    created_at DATETIME NOT NULL CONSTRAINT DF_Tecnicos_created_at DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
-    -- RESTRICCIONES (PK, UQ, FK, CK)
-    CONSTRAINT PK_Tecnicos 
-        PRIMARY KEY (id_tecnico),
-    CONSTRAINT UQ_Tecnicos_id_usuario 
-        UNIQUE (id_usuario),
-    CONSTRAINT CK_Tecnicos_SoloRolTecnico 
-        CHECK (id_rol = 'R002'),
-    CONSTRAINT FK_Tecnicos_Usuarios_Rol 
-        FOREIGN KEY (id_usuario, id_rol) REFERENCES Usuarios(id_usuario, id_rol) 
-        ON UPDATE CASCADE 
-        ON DELETE NO ACTION,
-    CONSTRAINT CK_Tecnicos_disponibilidad 
-        CHECK (disponibilidad IN ('Disponible', 'Ocupado', 'No disponible')),
-    CONSTRAINT CK_Tecnicos_estado 
-        CHECK (estado_tecnico IN ('Activo', 'Inactivo'))
+    CONSTRAINT PK_Tecnicos PRIMARY KEY (id_tecnico),
+    CONSTRAINT UQ_Tecnicos_id_usuario UNIQUE (id_usuario),
+    CONSTRAINT CK_Tecnicos_id_formato CHECK (id_tecnico LIKE 'T[0-9][0-9][0-9]'),
+    CONSTRAINT CK_Tecnicos_disponibilidad CHECK (disponibilidad IN (N'Disponible', N'Ocupado', N'No disponible')),
+    CONSTRAINT CK_Tecnicos_estado_tecnico CHECK (estado_tecnico IN (N'Activo', N'Inactivo')),
+    CONSTRAINT FK_Tecnicos_Usuarios FOREIGN KEY (id_usuario)
+        REFERENCES Seguridad.Usuarios(id_usuario)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE
 );
 GO
+
 /* ============================================================
    4. TABLA: Edificio
    Cardinalidad: Edificio 1 ---- N Aula
