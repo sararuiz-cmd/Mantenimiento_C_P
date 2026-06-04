@@ -101,104 +101,71 @@ CREATE TABLE Seguridad.Tecnicos (
 GO
 
 /* ============================================================
-   4. TABLA: Edificio
-   Cardinalidad: Edificio 1 ---- N Aula
+   SCHEMA: Infraestructura
+   Módulo relacionado: SM02 Gestión de laboratorios, edificios y aulas
    ============================================================ */
-CREATE TABLE Edificio (
-    id_edificio            CHAR(5)        NOT NULL,
-    nombre_edificio        NVARCHAR(50)   NOT NULL,
-    amount_pisos           INT            NOT NULL,
-    created_at             DATETIME                DEFAULT GETDATE(),
-    updated_at             DATETIME        NULL,
-    deleted_at             DATETIME        NULL,
+CREATE TABLE Infraestructura.Edificios (
+    id_edificio CHAR(6) NOT NULL,
+    nombre_edificio NVARCHAR(50) NOT NULL,
+    cantidad_pisos INT NOT NULL,
+    created_at DATETIME NOT NULL CONSTRAINT DF_Edificios_created_at DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
-    -- RESTRICCIONES (PK, CK)
-    CONSTRAINT PK_Edificio 
-        PRIMARY KEY (id_edificio),
-    CONSTRAINT CK_Edificio_cantidad_pisos 
-        CHECK (amount_pisos > 0)
+    CONSTRAINT PK_Edificios PRIMARY KEY (id_edificio),
+    CONSTRAINT UQ_Edificios_nombre_edificio UNIQUE (nombre_edificio),
+    CONSTRAINT CK_Edificios_cantidad_pisos CHECK (cantidad_pisos > 0)
 );
 GO
-/* ============================================================
-   5. TABLA: Aula
-   Cardinalidad: Aula N ---- 1 Edificio
-   ============================================================ */
-CREATE TABLE Aula (
-    aula_id                CHAR(6)        NOT NULL,
-    referencia             NVARCHAR(100)  NOT NULL,
-    estado_aula            NVARCHAR(20)   NOT NULL DEFAULT 'Activa',
-    id_edificio            CHAR(5)        NOT NULL,
-    piso                   INT            NOT NULL,
-    created_at             DATETIME                DEFAULT GETDATE(),
-    updated_at             DATETIME        NULL,
-    deleted_at             DATETIME        NULL,
 
-    -- RESTRICCIONES (PK, FK, CK)
-    CONSTRAINT PK_Aula 
-        PRIMARY KEY (aula_id),
-    CONSTRAINT FK_Aula_Edificio 
-        FOREIGN KEY (id_edificio) REFERENCES Edificio(id_edificio) 
-        ON UPDATE CASCADE 
-        ON DELETE NO ACTION,
-    CONSTRAINT CK_Aula_estado 
-        CHECK (estado_aula IN ('Activa', 'Inactiva')),
-    CONSTRAINT CK_Aula_piso_positivo 
-        CHECK (piso >= 0)
+CREATE TABLE Infraestructura.Aulas (
+    aula_id VARCHAR(20) NOT NULL,
+    referencia NVARCHAR(100) NULL,
+    estado_aula NVARCHAR(20) NOT NULL CONSTRAINT DF_Aulas_estado_aula DEFAULT N'Activa',
+    id_edificio CHAR(6) NOT NULL,
+    piso INT NOT NULL,
+    created_at DATETIME NOT NULL CONSTRAINT DF_Aulas_created_at DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
+
+    CONSTRAINT PK_Aulas PRIMARY KEY (aula_id),
+    CONSTRAINT UQ_Aulas_edificio_piso_referencia UNIQUE (id_edificio, piso, referencia),
+    CONSTRAINT CK_Aulas_estado_aula CHECK (estado_aula IN (N'Activa', N'Inactiva')),
+    CONSTRAINT CK_Aulas_piso CHECK (piso > 0),
+    CONSTRAINT FK_Aulas_Edificios FOREIGN KEY (id_edificio)
+        REFERENCES Infraestructura.Edificios(id_edificio)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE
 );
 GO
-/* ============================================================
-   6. TABLA: Laboratorios
-   Cardinalidad:
-   - Usuarios 1 ---- N Laboratorios como responsables.
-   - Aula 1 ---- 0..1 Laboratorios.
-     Decisión aplicada: un aula tendrá como máximo un laboratorio.
-   ============================================================ */
-CREATE TABLE Laboratorios (
-    id_laboratorio         CHAR(4)        NOT NULL,
-    nombre_laboratorio     NVARCHAR(100)  NOT NULL,
-    descripcion            NVARCHAR(255)   NULL,
-    id_responsable         CHAR(4)        NOT NULL,
-    estado_laboratorio     NVARCHAR(20)   NOT NULL DEFAULT 'Activo',
-    aula_id                CHAR(6)        NOT NULL,
-    created_at             DATETIME                DEFAULT GETDATE(),
-    updated_at             DATETIME        NULL,
-    deleted_at             DATETIME        NULL,
 
-    -- RESTRICCIONES (PK, UQ, FK, CK)
-    CONSTRAINT PK_Laboratorios 
-        PRIMARY KEY (id_laboratorio),
-    CONSTRAINT UQ_Laboratorios_nombre
-    UNIQUE (nombre_laboratorio),
-    CONSTRAINT FK_Laboratorios_Usuarios 
-        FOREIGN KEY (id_responsable) REFERENCES Usuarios(id_usuario) 
-        ON UPDATE NO ACTION 
-        ON DELETE NO ACTION,
-    CONSTRAINT FK_Laboratorios_Aula 
-        FOREIGN KEY (aula_id) REFERENCES Aula(aula_id) 
-        ON UPDATE CASCADE 
-        ON DELETE NO ACTION,
-    CONSTRAINT CK_Laboratorios_estado 
-        CHECK (estado_laboratorio IN ('Activo', 'Inactivo'))
+CREATE TABLE Infraestructura.Laboratorios (
+    id_laboratorio CHAR(4) NOT NULL,
+    nombre_laboratorio NVARCHAR(100) NOT NULL,
+    descripcion NVARCHAR(255) NULL,
+    id_responsable CHAR(4) NOT NULL,
+    estado_laboratorio NVARCHAR(20) NOT NULL CONSTRAINT DF_Laboratorios_estado_laboratorio DEFAULT N'Activo',
+    aula_id VARCHAR(20) NOT NULL,
+    created_at DATETIME NOT NULL CONSTRAINT DF_Laboratorios_created_at DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
+
+    CONSTRAINT PK_Laboratorios PRIMARY KEY (id_laboratorio),
+    CONSTRAINT UQ_Laboratorios_nombre_laboratorio UNIQUE (nombre_laboratorio),
+    CONSTRAINT UQ_Laboratorios_aula_id UNIQUE (aula_id),
+    CONSTRAINT CK_Laboratorios_id_formato CHECK (id_laboratorio LIKE 'L[0-9][0-9][0-9]'),
+    CONSTRAINT CK_Laboratorios_estado_laboratorio CHECK (estado_laboratorio IN (N'Activo', N'Inactivo')),
+    CONSTRAINT FK_Laboratorios_Usuarios FOREIGN KEY (id_responsable)
+        REFERENCES Seguridad.Usuarios(id_usuario)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION,
+    CONSTRAINT FK_Laboratorios_Aulas FOREIGN KEY (aula_id)
+        REFERENCES Infraestructura.Aulas(aula_id)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE
 );
 GO
-/* ============================================================
-   7. TABLA: Modelos
-   Marca está fusionada dentro de Modelos.
-   Cardinalidad: Modelos 1 ---- N Equipos
-   ============================================================ */
-CREATE TABLE Modelos (
-    id_modelo              CHAR(6)        NOT NULL,
-    nombre_modelo          NVARCHAR(100)  NOT NULL,
-    marca                  NVARCHAR(50)   NOT NULL,
-    created_at             DATETIME                DEFAULT GETDATE(),
-    updated_at             DATETIME        NULL,
-    deleted_at             DATETIME        NULL,
 
-    -- RESTRICCIONES (PK)
-    CONSTRAINT PK_Modelos 
-        PRIMARY KEY (id_modelo)
-);
-GO
 /* ============================================================
    8. TABLA: Equipos
    Cardinalidad:
