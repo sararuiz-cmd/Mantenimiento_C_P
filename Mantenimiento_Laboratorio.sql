@@ -35,21 +35,20 @@ GO
 
 
 /* ============================================================
-   1. TABLA: Roles
-   Cardinalidad: Roles 1 ---- N Usuarios
+   SCHEMA: Seguridad
+   Módulo relacionado: SM01 Gestión de usuarios, roles y técnicos
    ============================================================ */
-CREATE TABLE Roles (
+CREATE TABLE Seguridad.Roles (
     id_rol CHAR(4) NOT NULL,
     nombre_rol NVARCHAR(30) NOT NULL,
     descripcion_rol NVARCHAR(150) NULL,
-    
-    -- Auditoría
-    created_at DATETIME DEFAULT GETDATE(),
+    created_at DATETIME NOT NULL CONSTRAINT DF_Roles_created_at DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Roles PRIMARY KEY (id_rol),
-    CONSTRAINT UQ_Roles_nombre_rol UNIQUE (nombre_rol)
+    CONSTRAINT UQ_Roles_nombre_rol UNIQUE (nombre_rol),
+    CONSTRAINT CK_Roles_id_formato CHECK (id_rol LIKE 'R[0-9][0-9][0-9]')
 );
 GO
 
