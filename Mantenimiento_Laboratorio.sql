@@ -1,23 +1,12 @@
 /* ============================================================
    Proyecto: Base de datos para gestión de mantenimiento
-   Motor recomendado: Microsoft SQL Server
-   Descripción:
-   - Crea la base de datos.
-   - Crea tablas con atributos, PK, FK, UNIQUE, CHECK y DEFAULT.
-   - Respeta las entidades actuales: Roles, Usuarios, Tecnicos,
-     Laboratorios, Edificio, Aula, Modelos, Equipos,
-     Ordenes_de_Trabajo, Repuestos y Detalle_Orden_Repuesto.
-   - No usa Locaciones, Marcas ni Fallas_Correctivas como tablas separadas.
-   - Usa nombres de tablas con guion bajo cuando son compuestos.
-   - Laboratorios.aula_id se define como UNIQUE: un aula tiene como máximo un laboratorio.
    ============================================================ */
 
 USE master;
 GO
 
-IF DB_ID('BD_Mantenimiento_Laboratorios') IS NOT NULL
+IF EXISTS (SELECT 1 FROM sys.databases WHERE name = N'BD_Mantenimiento_Laboratorios')
 BEGIN
-    ALTER DATABASE BD_Mantenimiento_Laboratorios SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
     DROP DATABASE BD_Mantenimiento_Laboratorios;
 END;
 GO
@@ -27,6 +16,7 @@ GO
 
 USE BD_Mantenimiento_Laboratorios;
 GO
+
 
 /* ============================================================
    1. TABLA: Roles
