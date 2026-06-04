@@ -238,186 +238,85 @@ CREATE TABLE Inventario.Repuestos (
 );
 GO
 /* ============================================================
-   10. TABLA: Repuestos
-   Cardinalidad: Repuestos N ---- N Ordenes_de_Trabajo
-   Se resuelve con Detalle_Orden_Repuesto.
+   SCHEMA: Mantenimiento
+   Módulos relacionados: SM05, SM06 y SM07
    ============================================================ */
-CREATE TABLE Repuestos (
-    id_repuesto            CHAR(4)        NOT NULL,
-    nombre_repuesto        NVARCHAR(100)  NOT NULL,
-    categoria              NVARCHAR(50)   NOT NULL,
-    unidad_medida          NVARCHAR(30)   NOT NULL DEFAULT 'Unidad',
-    cantidad_disponible    INT            NOT NULL DEFAULT 0,
-    stock_minimo           INT            NOT NULL DEFAULT 0,
-    costo_unitario         DECIMAL(10,2)  NOT NULL DEFAULT 0.00,
-    estado                 NVARCHAR(20)   NOT NULL DEFAULT 'Activo',
-    created_at             DATETIME                DEFAULT GETDATE(),
-    updated_at             DATETIME        NULL,
-    deleted_at             DATETIME        NULL,
-
-    -- RESTRICCIONES (PK, CK)
-    CONSTRAINT PK_Repuestos 
-        PRIMARY KEY (id_repuesto),
-        CONSTRAINT UQ_Repuestos_nombre
-    UNIQUE (nombre_repuesto),
-    CONSTRAINT CK_Repuestos_cantidad_no_negativa 
-        CHECK (cantidad_disponible >= 0),
-    CONSTRAINT CK_Repuestos_stock_minimo 
-        CHECK (stock_minimo >= 0),
-    CONSTRAINT CK_Repuestos_costo 
-        CHECK (costo_unitario >= 0.00),
-    CONSTRAINT CK_Repuestos_estado 
-        CHECK (estado IN ('Activo', 'Inactivo'))
-);
-GO  
-/* ============================================================
-   11. TABLA: Detalle_Orden_Repuesto
-   Cardinalidad:
-   - Ordenes_de_Trabajo 1 ---- N Detalle_Orden_Repuesto.
-   - Repuestos 1 ---- N Detalle_Orden_Repuesto.
-   - Ordenes_de_Trabajo N ---- N Repuestos mediante esta tabla.
-   PK compuesta: id_orden + id_repuesto.
-   ============================================================ */
-CREATE TABLE Detalle_Orden_Repuesto (
-    id_orden               CHAR(4)        NOT NULL,
-    id_repuesto            CHAR(4)        NOT NULL,
-    cantidad_usada         INT            NOT NULL,
-    created_at             DATETIME                DEFAULT GETDATE(),
-    updated_at             DATETIME        NULL,
-    deleted_at             DATETIME        NULL,
-
-    -- RESTRICCIONES (PK, FK, CK)
-    CONSTRAINT PK_Detalle_Orden_Repuesto 
-        PRIMARY KEY (id_orden, id_repuesto),
-    CONSTRAINT FK_Detalle_Orden 
-        FOREIGN KEY (id_orden) REFERENCES Ordenes_de_Trabajo(id_orden) 
-        ON UPDATE CASCADE 
-        ON DELETE NO ACTION,
-    CONSTRAINT FK_Detalle_Repuesto 
-        FOREIGN KEY (id_repuesto) REFERENCES Repuestos(id_repuesto) 
-        ON UPDATE CASCADE 
-        ON DELETE NO ACTION,
-    CONSTRAINT CK_Detalle_cantidad_usada 
-        CHECK (cantidad_usada >= 1)
-);
-GO/* ============================================================
-   TRIGGER 1: Valida que el usuario asignado como técnico tenga rol Técnico.
-   En los datos simulados, R002 corresponde al rol Técnico.
-   ============================================================ */
-ALTER TABLE Usuarios 
-ADD CONSTRAINT UQ_Usuarios_Id_Rol UNIQUE (id_usuario, id_rol);
-GO
-
--- Nueva estructura de la tabla Tecnicos
-CREATE TABLE Tecnicos (
+CREATE TABLE Mantenimiento.Ordenes_de_Trabajo (
+    id_orden CHAR(4) NOT NULL,
+    id_equipo CHAR(5) NOT NULL,
     id_tecnico CHAR(4) NOT NULL,
-    id_usuario CHAR(4) NOT NULL,
-    id_rol CHAR(4) NOT NULL CONSTRAINT DF_Tecnicos_rol DEFAULT 'R002', -- Forzamos el rol
-    especialidad NVARCHAR(50) NOT NULL,
-    disponibilidad NVARCHAR(20) NOT NULL CONSTRAINT DF_Tecnicos_disponibilidad DEFAULT 'Disponible',
-    estado_tecnico NVARCHAR(20) NOT NULL CONSTRAINT DF_Tecnicos_estado DEFAULT 'Activo',
+    id_falla CHAR(4) NULL,
+    tipo_mantenimiento NVARCHAR(20) NOT NULL,
+    prioridad_orden NVARCHAR(20) NOT NULL CONSTRAINT DF_Ordenes_prioridad_orden DEFAULT N'Media',
+    fecha_creacion DATE NOT NULL,
+    estado_orden NVARCHAR(30) NOT NULL CONSTRAINT DF_Ordenes_estado_orden DEFAULT N'Programada',
+    diagnostico NVARCHAR(255) NULL,
+    actividades_realizadas NVARCHAR(255) NULL,
+    resultado_final NVARCHAR(255) NULL,
+    fecha_cierre DATE NULL,
+    id_usuario_reporta CHAR(4) NOT NULL,
+    created_at DATETIME NOT NULL CONSTRAINT DF_Ordenes_created_at DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
-    CONSTRAINT PK_Tecnicos PRIMARY KEY (id_tecnico),
-    CONSTRAINT UQ_Tecnicos_id_usuario UNIQUE (id_usuario),
-    
-    CONSTRAINT CK_Tecnicos_SoloRolTecnico CHECK (id_rol = 'R002'),
-    
-    CONSTRAINT FK_Tecnicos_Usuarios_Rol FOREIGN KEY (id_usuario, id_rol)
-        REFERENCES Usuarios(id_usuario, id_rol)
-        ON UPDATE CASCADE
-        ON DELETE NO ACTION,
-        
-    CONSTRAINT CK_Tecnicos_disponibilidad CHECK (disponibilidad IN ('Disponible', 'Ocupado', 'No disponible')),
-    CONSTRAINT CK_Tecnicos_estado CHECK (estado_tecnico IN ('Activo', 'Inactivo'))
+    CONSTRAINT PK_Ordenes_de_Trabajo PRIMARY KEY (id_orden),
+    CONSTRAINT CK_Ordenes_id_formato CHECK (id_orden LIKE 'O[0-9][0-9][0-9]'),
+    CONSTRAINT CK_Ordenes_tipo_mantenimiento CHECK (tipo_mantenimiento IN (N'Preventivo', N'Correctivo')),
+    CONSTRAINT CK_Ordenes_prioridad_orden CHECK (prioridad_orden IN (N'Baja', N'Media', N'Alta')),
+    CONSTRAINT CK_Ordenes_estado_orden CHECK (estado_orden IN (N'Programada', N'En proceso', N'Cerrada')),
+    CONSTRAINT CK_Ordenes_fecha_cierre CHECK (fecha_cierre IS NULL OR fecha_cierre >= fecha_creacion),
+    CONSTRAINT CK_Ordenes_falla_segun_tipo CHECK (
+        (tipo_mantenimiento = N'Correctivo' AND id_falla IS NOT NULL)
+        OR
+        (tipo_mantenimiento = N'Preventivo' AND id_falla IS NULL)
+    ),
+    CONSTRAINT CK_Ordenes_cierre_obligatorio CHECK (
+        (
+            estado_orden = N'Cerrada'
+            AND fecha_cierre IS NOT NULL
+            AND diagnostico IS NOT NULL
+            AND actividades_realizadas IS NOT NULL
+            AND resultado_final IS NOT NULL
+        )
+        OR
+        (
+            estado_orden <> N'Cerrada'
+            AND fecha_cierre IS NULL
+        )
+    ),
+    CONSTRAINT FK_Ordenes_Equipos FOREIGN KEY (id_equipo)
+        REFERENCES Inventario.Equipos(id_equipo)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE,
+    CONSTRAINT FK_Ordenes_Tecnicos FOREIGN KEY (id_tecnico)
+        REFERENCES Seguridad.Tecnicos(id_tecnico)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE,
+    CONSTRAINT FK_Ordenes_Usuarios_Reporta FOREIGN KEY (id_usuario_reporta)
+        REFERENCES Seguridad.Usuarios(id_usuario)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
 );
 GO
 
-/* ============================================================
-   TRIGGER 2: Valida que el piso del aula no supere los pisos del edificio.
-   ============================================================ */
-/* ============================================================
-   TABLA: Edificio
-   Cardinalidad: Edificio 1 ---- N Aula
-   ============================================================ */
-CREATE TABLE Edificio (
-    id_edificio CHAR(5) NOT NULL,
-    nombre_edificio NVARCHAR(50) NOT NULL,
-    cantidad_pisos INT NOT NULL,
-
-    CONSTRAINT PK_Edificio PRIMARY KEY (id_edificio),
-    CONSTRAINT CK_Edificio_cantidad_pisos CHECK (cantidad_pisos > 0)
-);
-GO
-
-/* ============================================================
-   TABLA: Aula
-   Cardinalidad: Aula N ---- 1 Edificio
-   ============================================================ */
-CREATE TABLE Aula (
-    aula_id CHAR(6) NOT NULL,
-    referencia NVARCHAR(100) NOT NULL,
-    estado_aula NVARCHAR(20) NOT NULL CONSTRAINT DF_Aula_estado DEFAULT 'Activa',
-    id_edificio CHAR(5) NOT NULL,
-    piso INT NOT NULL,
-
-    CONSTRAINT PK_Aula PRIMARY KEY (aula_id),
-    CONSTRAINT FK_Aula_Edificio FOREIGN KEY (id_edificio)
-        REFERENCES Edificio(id_edificio)
-        ON UPDATE CASCADE
-        ON DELETE NO ACTION,
-    CONSTRAINT CK_Aula_estado CHECK (estado_aula IN ('Activa', 'Inactiva')),
-    -- Control nativo simple: evita errores de dedo como números negativos
-    CONSTRAINT CK_Aula_piso_positivo CHECK (piso >= 0) 
-);
-GO
-
-/* ============================================================
-   TRIGGER 3: Valida stock al registrar repuestos en una orden.
-   Nota: solo valida que la cantidad usada no supere el stock disponible.
-   No descuenta automáticamente para conservar los datos simulados originales.
-   ============================================================ */
-/* ============================================================
-   TABLA: Repuestos
-   ============================================================ */
-CREATE TABLE Repuestos (
-    id_repuesto CHAR(4) NOT NULL,
-    nombre_repuesto NVARCHAR(100) NOT NULL,
-    categoria NVARCHAR(50) NOT NULL,
-    unidad_medida NVARCHAR(30) NOT NULL CONSTRAINT DF_Repuestos_unidad DEFAULT 'Unidad',
-    cantidad_disponible INT NOT NULL CONSTRAINT DF_Repuestos_cantidad DEFAULT 0,
-    stock_minimo INT NOT NULL CONSTRAINT DF_Repuestos_stock_minimo DEFAULT 0,
-    costo_unitario DECIMAL(10,2) NOT NULL CONSTRAINT DF_Repuestos_costo DEFAULT 0.00,
-    estado NVARCHAR(20) NOT NULL CONSTRAINT DF_Repuestos_estado DEFAULT 'Activo',
-
-    CONSTRAINT PK_Repuestos PRIMARY KEY (id_repuesto),
-    
-    -- ¡ESTA ES LA CLAVE! Impide físicamente que el stock baje de cero
-    CONSTRAINT CK_Repuestos_cantidad_no_negativa CHECK (cantidad_disponible >= 0),
-    
-    CONSTRAINT CK_Repuestos_stock_minimo CHECK (stock_minimo >= 0),
-    CONSTRAINT CK_Repuestos_costo CHECK (costo_unitario >= 0.00),
-    CONSTRAINT CK_Repuestos_estado CHECK (estado IN ('Activo', 'Inactivo'))
-);
-GO
-
-/* ============================================================
-  TABLA: Detalle_Orden_Repuesto
-   ============================================================ */
-CREATE TABLE Detalle_Orden_Repuesto (
+CREATE TABLE Mantenimiento.Detalle_Orden_Repuesto (
     id_orden CHAR(4) NOT NULL,
     id_repuesto CHAR(4) NOT NULL,
     cantidad_usada INT NOT NULL,
+    created_at DATETIME NOT NULL CONSTRAINT DF_Detalle_created_at DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Detalle_Orden_Repuesto PRIMARY KEY (id_orden, id_repuesto),
-    CONSTRAINT FK_Detalle_Orden FOREIGN KEY (id_orden)
-        REFERENCES Ordenes_de_Trabajo(id_orden)
+    CONSTRAINT CK_Detalle_cantidad_usada CHECK (cantidad_usada >= 1),
+    CONSTRAINT FK_Detalle_Ordenes FOREIGN KEY (id_orden)
+        REFERENCES Mantenimiento.Ordenes_de_Trabajo(id_orden)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT FK_Detalle_Repuestos FOREIGN KEY (id_repuesto)
+        REFERENCES Inventario.Repuestos(id_repuesto)
+        ON DELETE NO ACTION
         ON UPDATE CASCADE
-        ON DELETE NO ACTION,
-    CONSTRAINT FK_Detalle_Repuesto FOREIGN KEY (id_repuesto)
-        REFERENCES Repuestos(id_repuesto)
-        ON UPDATE CASCADE
-        ON DELETE NO ACTION,
-    CONSTRAINT CK_Detalle_cantidad_usada CHECK (cantidad_usada >= 1)
 );
 GO
 
