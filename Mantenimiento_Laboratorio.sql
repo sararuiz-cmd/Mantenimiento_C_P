@@ -167,106 +167,76 @@ CREATE TABLE Infraestructura.Laboratorios (
 GO
 
 /* ============================================================
-   8. TABLA: Equipos
-   Cardinalidad:
-   - Aula 1 ---- N Equipos.
-   - Modelos 1 ---- N Equipos.
+   SCHEMA: Inventario
+   Módulos relacionados: SM03 Gestión de equipos y SM07 Gestión de repuestos y costos
    ============================================================ */
-CREATE TABLE Equipos (
-    id_equipo              CHAR(5)        NOT NULL,
-    aula_id                CHAR(6)        NOT NULL,
-    numero_serie           NVARCHAR(50)   NOT NULL,
-    id_modelo              CHAR(6)        NOT NULL,
-    criticidad             NVARCHAR(20)   NOT NULL DEFAULT 'Media',
-    fecha_adquisicion      DATE           NOT NULL,
-    estado_equipo          NVARCHAR(30)   NOT NULL DEFAULT 'Activo',
-    fecha_fuera_servicio   DATE            NULL,
-    created_at             DATETIME                DEFAULT GETDATE(),
-    updated_at             DATETIME        NULL,
-    deleted_at             DATETIME        NULL,
+CREATE TABLE Inventario.Modelos (
+    id_modelo CHAR(6) NOT NULL,
+    nombre_modelo NVARCHAR(100) NOT NULL,
+    marca NVARCHAR(50) NOT NULL,
+    created_at DATETIME NOT NULL CONSTRAINT DF_Modelos_created_at DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
-    -- RESTRICCIONES (PK, UQ, FK, CK)
-    CONSTRAINT PK_Equipos 
-        PRIMARY KEY (id_equipo),
-    CONSTRAINT UQ_Equipos_numero_serie 
-        UNIQUE (numero_serie),
-    CONSTRAINT FK_Equipos_Aula 
-        FOREIGN KEY (aula_id) REFERENCES Aula(aula_id) 
-        ON UPDATE CASCADE 
-        ON DELETE NO ACTION,
-    CONSTRAINT FK_Equipos_Modelos 
-        FOREIGN KEY (id_modelo) REFERENCES Modelos(id_modelo) 
-        ON UPDATE CASCADE 
-        ON DELETE NO ACTION,
-    CONSTRAINT CK_Equipos_criticidad 
-        CHECK (criticidad IN ('Baja', 'Media', 'Alta')),
-    CONSTRAINT CK_Equipos_estado 
-        CHECK (estado_equipo IN ('Activo', 'Inactivo', 'Fuera de servicio')),
-    CONSTRAINT CK_Equipos_fecha_fuera_servicio 
-        CHECK (fecha_fuera_servicio IS NULL OR fecha_fuera_servicio >= fecha_adquisicion),
-    CONSTRAINT CK_Equipos_activo_sin_fecha_baja 
-        CHECK (estado_equipo <> 'Activo' OR fecha_fuera_servicio IS NULL)
+    CONSTRAINT PK_Modelos PRIMARY KEY (id_modelo),
+    CONSTRAINT UQ_Modelos_nombre_marca UNIQUE (nombre_modelo, marca),
+    CONSTRAINT CK_Modelos_id_formato CHECK (id_modelo LIKE 'MOD[0-9][0-9][0-9]')
 );
 GO
 
-/* ============================================================
-   9. TABLA: Ordenes_de_Trabajo
-   Las fallas correctivas NO son una tabla separada.
-   id_falla queda como atributo opcional dentro de la orden.
+CREATE TABLE Inventario.Equipos (
+    id_equipo CHAR(5) NOT NULL,
+    aula_id VARCHAR(20) NOT NULL,
+    numero_serie NVARCHAR(50) NOT NULL,
+    id_modelo CHAR(6) NOT NULL,
+    criticidad NVARCHAR(20) NOT NULL CONSTRAINT DF_Equipos_criticidad DEFAULT N'Media',
+    fecha_adquisicion DATE NOT NULL,
+    estado_equipo NVARCHAR(30) NOT NULL CONSTRAINT DF_Equipos_estado_equipo DEFAULT N'Activo',
+    fecha_fuera_servicio DATE NULL,
+    created_at DATETIME NOT NULL CONSTRAINT DF_Equipos_created_at DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
 
-   Cardinalidad:
-   - Equipos 1 ---- N Ordenes_de_Trabajo.
-   - Tecnicos 1 ---- N Ordenes_de_Trabajo.
-   - Usuarios 1 ---- N Ordenes_de_Trabajo como usuario reportante.
-   ============================================================ */
-CREATE TABLE Ordenes_de_Trabajo (
-    id_orden               CHAR(4)        NOT NULL,
-    id_equipo              CHAR(5)        NOT NULL,
-    id_tecnico             CHAR(4)        NOT NULL,
-    id_falla               CHAR(4)         NULL,
-    tipo_mantenimiento     NVARCHAR(20)   NOT NULL,
-    prioridad_orden        NVARCHAR(20)   NOT NULL DEFAULT 'Media',
-    fecha_creacion         DATE           NOT NULL,
-    estado_orden           NVARCHAR(30)   NOT NULL DEFAULT 'Programada',
-    diagnostico            NVARCHAR(255)   NULL,
-    actividades_realizadas NVARCHAR(255)   NULL,
-    resultado_final        NVARCHAR(255)   NULL,
-    fecha_cierre           DATE            NULL,
-    id_usuario_reporta     CHAR(4)        NOT NULL,
-    created_at             DATETIME                DEFAULT GETDATE(),
-    updated_at             DATETIME        NULL,
-    deleted_at             DATETIME        NULL,
-
-    -- RESTRICCIONES (PK, FK, CK)
-    CONSTRAINT PK_Ordenes_de_Trabajo 
-        PRIMARY KEY (id_orden),
-    CONSTRAINT FK_Ordenes_Equipos 
-        FOREIGN KEY (id_equipo) REFERENCES Equipos(id_equipo) 
-        ON UPDATE CASCADE 
-        ON DELETE NO ACTION,
-    CONSTRAINT FK_Ordenes_Tecnicos 
-        FOREIGN KEY (id_tecnico) REFERENCES Tecnicos(id_tecnico) 
-        ON UPDATE CASCADE 
-        ON DELETE NO ACTION,
-    CONSTRAINT FK_Ordenes_Usuarios_Reporta 
-        FOREIGN KEY (id_usuario_reporta) REFERENCES Usuarios(id_usuario) 
-        ON UPDATE NO ACTION 
-        ON DELETE NO ACTION,
-    CONSTRAINT CK_Ordenes_tipo_mantenimiento 
-        CHECK (tipo_mantenimiento IN ('Preventivo', 'Correctivo')),
-    CONSTRAINT CK_Ordenes_prioridad 
-        CHECK (prioridad_orden IN ('Baja', 'Media', 'Alta')),
-    CONSTRAINT CK_Ordenes_estado 
-        CHECK (estado_orden IN ('Programada', 'En proceso', 'Cerrada')),
-    CONSTRAINT CK_Ordenes_fecha_cierre 
-        CHECK (fecha_cierre IS NULL OR fecha_cierre >= fecha_creacion),
-    CONSTRAINT CK_Ordenes_falla_segun_tipo 
-        CHECK ((tipo_mantenimiento = 'Correctivo' AND id_falla IS NOT NULL) OR (tipo_mantenimiento = 'Preventivo' AND id_falla IS NULL)),
-    CONSTRAINT CK_Ordenes_cierre_obligatorio 
-        CHECK ((estado_orden = 'Cerrada' AND fecha_cierre IS NOT NULL AND diagnostico IS NOT NULL AND resultado_final IS NOT NULL) OR (estado_orden <> 'Cerrada' AND fecha_cierre IS NULL))
+    CONSTRAINT PK_Equipos PRIMARY KEY (id_equipo),
+    CONSTRAINT UQ_Equipos_numero_serie UNIQUE (numero_serie),
+    CONSTRAINT CK_Equipos_id_formato CHECK (id_equipo LIKE 'EQ[0-9][0-9][0-9]'),
+    CONSTRAINT CK_Equipos_criticidad CHECK (criticidad IN (N'Baja', N'Media', N'Alta')),
+    CONSTRAINT CK_Equipos_estado_equipo CHECK (estado_equipo IN (N'Activo', N'Inactivo', N'Fuera de servicio')),
+    CONSTRAINT CK_Equipos_fecha_fuera_servicio CHECK (fecha_fuera_servicio IS NULL OR fecha_fuera_servicio >= fecha_adquisicion),
+    CONSTRAINT CK_Equipos_activo_sin_fecha_fuera CHECK (estado_equipo <> N'Activo' OR fecha_fuera_servicio IS NULL),
+    CONSTRAINT FK_Equipos_Aulas FOREIGN KEY (aula_id)
+        REFERENCES Infraestructura.Aulas(aula_id)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE,
+    CONSTRAINT FK_Equipos_Modelos FOREIGN KEY (id_modelo)
+        REFERENCES Inventario.Modelos(id_modelo)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE
 );
 GO
 
+CREATE TABLE Inventario.Repuestos (
+    id_repuesto CHAR(4) NOT NULL,
+    nombre_repuesto NVARCHAR(100) NOT NULL,
+    categoria NVARCHAR(50) NOT NULL,
+    unidad_medida NVARCHAR(30) NOT NULL CONSTRAINT DF_Repuestos_unidad_medida DEFAULT N'Unidad',
+    cantidad_disponible INT NOT NULL CONSTRAINT DF_Repuestos_cantidad_disponible DEFAULT 0,
+    stock_minimo INT NOT NULL CONSTRAINT DF_Repuestos_stock_minimo DEFAULT 0,
+    costo_unitario DECIMAL(10,2) NOT NULL CONSTRAINT DF_Repuestos_costo_unitario DEFAULT 0.00,
+    estado NVARCHAR(20) NOT NULL CONSTRAINT DF_Repuestos_estado DEFAULT N'Activo',
+    created_at DATETIME NOT NULL CONSTRAINT DF_Repuestos_created_at DEFAULT GETDATE(),
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
+
+    CONSTRAINT PK_Repuestos PRIMARY KEY (id_repuesto),
+    CONSTRAINT UQ_Repuestos_nombre_repuesto UNIQUE (nombre_repuesto),
+    CONSTRAINT CK_Repuestos_id_formato CHECK (id_repuesto LIKE 'R[0-9][0-9][0-9]'),
+    CONSTRAINT CK_Repuestos_cantidad_disponible CHECK (cantidad_disponible >= 0),
+    CONSTRAINT CK_Repuestos_stock_minimo CHECK (stock_minimo >= 0),
+    CONSTRAINT CK_Repuestos_costo_unitario CHECK (costo_unitario >= 0.00),
+    CONSTRAINT CK_Repuestos_estado CHECK (estado IN (N'Activo', N'Inactivo'))
+);
+GO
 /* ============================================================
    10. TABLA: Repuestos
    Cardinalidad: Repuestos N ---- N Ordenes_de_Trabajo
