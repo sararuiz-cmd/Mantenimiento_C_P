@@ -322,125 +322,156 @@ GO
 
 /* ============================================================
    INSERCIÓN DE DATOS SIMULADOS
-   Fechas convertidas a formato ISO: YYYY-MM-DD
+   Mínimo solicitado: 10 registros por tabla.
    ============================================================ */
-
-INSERT INTO Roles (id_rol, nombre_rol, descripcion_rol) VALUES
-('R001', 'Administrador', 'Usuario con permisos de gestión general'),
-('R002', 'Técnico', 'Usuario encargado de atender órdenes de mantenimiento'),
-('R003', 'Responsable', 'Usuario encargado de un laboratorio'),
-('R004', 'Reportante', 'Usuario que puede reportar fallas');
+INSERT INTO Seguridad.Roles (id_rol, nombre_rol, descripcion_rol) VALUES
+('R001', N'Administrador', N'Usuario con permisos de gestión general'),
+('R002', N'Técnico', N'Usuario encargado de atender órdenes de mantenimiento'),
+('R003', N'Responsable', N'Usuario encargado de un laboratorio'),
+('R004', N'Reportante', N'Usuario que puede reportar fallas'),
+('R005', N'Encargado almacén', N'Usuario encargado de controlar repuestos'),
+('R006', N'Gerencia', N'Usuario que consulta informes y costos'),
+('R007', N'Supervisor', N'Usuario que supervisa mantenimiento'),
+('R008', N'Auditor', N'Usuario que revisa trazabilidad de datos'),
+('R009', N'Coordinador', N'Usuario que coordina laboratorios'),
+('R010', N'Auxiliar', N'Usuario con apoyo operativo');
 GO
 
-INSERT INTO Usuarios (id_usuario, nombre, apellido, correo, telefono, contrasena_hash, id_rol, estado_usuario) VALUES
-('U001', 'Sara', 'Ruiz', 'sara@gmail.com', '8888-1111', 'hash_001', 'R001', 'Activo'),
-('U002', 'Jorge', 'Delgado', 'jorge@gmail.com', '7777-2222', 'hash_002', 'R002', 'Activo'),
-('U003', 'Enrique', 'Arana', 'enrique@gmail.com', '8666-3333', 'hash_003', 'R003', 'Activo'),
-('U004', 'Jhesly', 'Castillo', 'jhesly@gmail.com', '8555-4444', 'hash_004', 'R004', 'Activo'),
-('U005', 'Carlos', 'Méndez', 'carlos@gmail.com', '8444-5555', 'hash_005', 'R002', 'Activo'),
-('U006', 'Valeria', 'López', 'valeria@gmail.com', '8333-6666', 'hash_006', 'R002', 'Activo'),
-('U007', 'Mario', 'Pérez', 'mario@gmail.com', '8222-7777', 'hash_007', 'R002', 'Activo');
+INSERT INTO Seguridad.Usuarios (id_usuario, nombre, apellido, correo, telefono, contrasena_hash, id_rol, estado_usuario) VALUES
+('U001', N'Sara', N'Ruiz', N'sara@gmail.com', '8888-1111', N'hash_001', 'R001', N'Activo'),
+('U002', N'Jorge', N'Delgado', N'jorge@gmail.com', '7777-2222', N'hash_002', 'R002', N'Activo'),
+('U003', N'Enrique', N'Arana', N'enrique@gmail.com', '8666-3333', N'hash_003', 'R003', N'Activo'),
+('U004', N'Jhesly', N'Castillo', N'jhesly@gmail.com', '8555-4444', N'hash_004', 'R004', N'Activo'),
+('U005', N'Carlos', N'Méndez', N'carlos@gmail.com', '8444-5555', N'hash_005', 'R002', N'Activo'),
+('U006', N'Valeria', N'López', N'valeria@gmail.com', '8333-6666', N'hash_006', 'R002', N'Activo'),
+('U007', N'Mario', N'Pérez', N'mario@gmail.com', '8222-7777', N'hash_007', 'R002', N'Activo'),
+('U008', N'Ana', N'García', N'ana@gmail.com', '8111-8888', N'hash_008', 'R002', N'Activo'),
+('U009', N'Luis', N'Ramírez', N'luis@gmail.com', '8999-9999', N'hash_009', 'R002', N'Activo'),
+('U010', N'Karla', N'Torres', N'karla@gmail.com', '8777-1212', N'hash_010', 'R002', N'Activo'),
+('U011', N'Diego', N'Vargas', N'diego@gmail.com', '8666-2323', N'hash_011', 'R002', N'Activo'),
+('U012', N'Lucía', N'Navarro', N'lucia@gmail.com', '8555-3434', N'hash_012', 'R002', N'Activo'),
+('U013', N'Pedro', N'Morales', N'pedro@gmail.com', '8444-4545', N'hash_013', 'R002', N'Activo'),
+('U014', N'Rosa', N'Herrera', N'rosa@gmail.com', '8333-5656', N'hash_014', 'R005', N'Activo'),
+('U015', N'Gabriel', N'Castro', N'gabriel@gmail.com', '8222-6767', N'hash_015', 'R006', N'Activo');
 GO
 
-INSERT INTO Tecnicos (id_tecnico, id_usuario, especialidad, disponibilidad, estado_tecnico) VALUES
-('T001', 'U002', 'Hardware', 'Disponible', 'Activo'),
-('T002', 'U005', 'Redes', 'Ocupado', 'Activo'),
-('T003', 'U006', 'Software', 'Disponible', 'Activo'),
-('T004', 'U007', 'Impresoras', 'Disponible', 'Activo');
+INSERT INTO Seguridad.Tecnicos (id_tecnico, id_usuario, especialidad, disponibilidad, estado_tecnico) VALUES
+('T001', 'U002', N'Hardware', N'Disponible', N'Activo'),
+('T002', 'U005', N'Redes', N'Ocupado', N'Activo'),
+('T003', 'U006', N'Software', N'Disponible', N'Activo'),
+('T004', 'U007', N'Impresoras', N'Disponible', N'Activo'),
+('T005', 'U008', N'Electrónica', N'No disponible', N'Activo'),
+('T006', 'U009', N'Climatización', N'Disponible', N'Activo'),
+('T007', 'U010', N'Equipos de medición', N'Ocupado', N'Activo'),
+('T008', 'U011', N'Cableado estructurado', N'Disponible', N'Activo'),
+('T009', 'U012', N'Mantenimiento preventivo', N'Disponible', N'Activo'),
+('T010', 'U013', N'Soporte general', N'Disponible', N'Activo');
 GO
 
-INSERT INTO Edificio (id_edificio, nombre_edificio, cantidad_pisos) VALUES
-('ED001', 'Edificio A', 2),
-('ED002', 'Edificio B', 1),
-('ED003', 'Edificio C', 3),
-('ED004', 'Edificio D', 3);
+INSERT INTO Infraestructura.Edificios (id_edificio, nombre_edificio, cantidad_pisos) VALUES
+('ED001', N'Edificio A', 2),
+('ED002', N'Edificio B', 1),
+('ED003', N'Edificio C', 3),
+('ED004', N'Edificio D', 3),
+('ED005', N'Edificio E', 4),
+('ED006', N'Edificio F', 2),
+('ED007', N'Edificio G', 5),
+('ED008', N'Edificio H', 3),
+('ED009', N'Edificio I', 2),
+('ED010', N'Edificio J', 4);
 GO
 
-INSERT INTO Aula (aula_id, referencia, estado_aula, id_edificio, piso) VALUES
-('AUL001', 'Aula 102, frente a coordinación', 'Activa', 'ED001', 2),
-('AUL002', 'Aula 102, cerca de recepción', 'Activa', 'ED002', 1),
-('AUL003', 'Aula 103, pasillo principal', 'Activa', 'ED003', 1),
-('AUL004', 'Área 301, junto a bodega', 'Inactiva', 'ED004', 3);
+INSERT INTO Infraestructura.Aulas (aula_id, referencia, estado_aula, id_edificio, piso) VALUES
+('AUL001', N'Aula 102, frente a coordinación', N'Activa', 'ED001', 2),
+('AUL002', N'Aula 102, cerca de recepción', N'Activa', 'ED002', 1),
+('AUL003', N'Aula 103, pasillo principal', N'Activa', 'ED003', 1),
+('AUL004', N'Área 301, junto a bodega', N'Inactiva', 'ED004', 3),
+('AUL005', N'Aula 201, ala norte', N'Activa', 'ED005', 2),
+('AUL006', N'Aula 101, entrada principal', N'Activa', 'ED006', 1),
+('AUL007', N'Aula 401, zona de prácticas', N'Activa', 'ED007', 4),
+('AUL008', N'Aula 202, segunda planta', N'Activa', 'ED008', 2),
+('AUL009', N'Aula 105, pasillo sur', N'Activa', 'ED009', 1),
+('AUL010', N'Aula 302, laboratorio auxiliar', N'Activa', 'ED010', 3);
 GO
 
-INSERT INTO Laboratorios (id_laboratorio, nombre_laboratorio, descripcion, id_responsable, estado_laboratorio, aula_id) VALUES
-('L001', 'Laboratorio de Redes', 'Prácticas de redes y conectividad', 'U003', 'Activo', 'AUL001'),
-('L002', 'Laboratorio de Programación', 'Prácticas de programación', 'U001', 'Activo', 'AUL002'),
-('L003', 'Laboratorio de Hardware', 'Revisión y práctica con equipos', 'U003', 'Activo', 'AUL003'),
-('L004', 'Laboratorio de Electrónica', 'Prácticas de circuitos', 'U001', 'Inactivo', 'AUL004');
+INSERT INTO Infraestructura.Laboratorios (id_laboratorio, nombre_laboratorio, descripcion, id_responsable, estado_laboratorio, aula_id) VALUES
+('L001', N'Laboratorio de Redes', N'Prácticas de redes y conectividad', 'U003', N'Activo', 'AUL001'),
+('L002', N'Laboratorio de Programación', N'Prácticas de programación', 'U001', N'Activo', 'AUL002'),
+('L003', N'Laboratorio de Hardware', N'Revisión y práctica con equipos', 'U003', N'Activo', 'AUL003'),
+('L004', N'Laboratorio de Electrónica', N'Prácticas de circuitos', 'U001', N'Inactivo', 'AUL004'),
+('L005', N'Laboratorio de Física', N'Prácticas con instrumentos de medición', 'U003', N'Activo', 'AUL005'),
+('L006', N'Laboratorio de Química', N'Prácticas con equipos de análisis', 'U001', N'Activo', 'AUL006'),
+('L007', N'Laboratorio de Automatización', N'Prácticas de control y sensores', 'U003', N'Activo', 'AUL007'),
+('L008', N'Laboratorio de Robótica', N'Prácticas con robots educativos', 'U001', N'Activo', 'AUL008'),
+('L009', N'Laboratorio de Base de Datos', N'Prácticas de gestores de bases de datos', 'U003', N'Activo', 'AUL009'),
+('L010', N'Laboratorio de Soporte Técnico', N'Área de diagnóstico y reparación', 'U001', N'Activo', 'AUL010');
 GO
 
-INSERT INTO Modelos (id_modelo, nombre_modelo, marca) VALUES
-('MOD001', 'ProBook 440', 'HP'),
-('MOD002', 'L3150', 'Epson'),
-('MOD003', 'OptiPlex 3080', 'Dell'),
-('MOD004', 'ThinkCentre M70', 'Lenovo');
+INSERT INTO Inventario.Modelos (id_modelo, nombre_modelo, marca) VALUES
+('MOD001', N'ProBook 440', N'HP'),
+('MOD002', N'L3150', N'Epson'),
+('MOD003', N'OptiPlex 3080', N'Dell'),
+('MOD004', N'ThinkCentre M70', N'Lenovo'),
+('MOD005', N'Catalyst 2960', N'Cisco'),
+('MOD006', N'Arduino Uno R3', N'Arduino'),
+('MOD007', N'Raspberry Pi 4', N'Raspberry'),
+('MOD008', N'LaserJet Pro M404', N'HP'),
+('MOD009', N'Inspiron 15', N'Dell'),
+('MOD010', N'IdeaCentre 3', N'Lenovo');
 GO
 
-INSERT INTO Equipos (id_equipo, aula_id, numero_serie, id_modelo, criticidad, fecha_adquisicion, estado_equipo, fecha_fuera_servicio) VALUES
-('EQ001', 'AUL001', 'HP12345', 'MOD001', 'Alta', '2024-02-10', 'Activo', NULL),
-('EQ002', 'AUL002', 'EP98765', 'MOD002', 'Media', '2024-03-15', 'Activo', NULL),
-('EQ003', 'AUL003', 'DL45678', 'MOD003', 'Alta', '2024-04-20', 'Fuera de servicio', '2026-05-21'),
-('EQ004', 'AUL004', 'LN78901', 'MOD004', 'Baja', '2024-05-05', 'Inactivo', NULL);
+INSERT INTO Inventario.Equipos (id_equipo, aula_id, numero_serie, id_modelo, criticidad, fecha_adquisicion, estado_equipo, fecha_fuera_servicio) VALUES
+('EQ001', 'AUL001', N'HP12345', 'MOD001', N'Alta', '2024-02-10', N'Activo', NULL),
+('EQ002', 'AUL002', N'EP98765', 'MOD002', N'Media', '2024-03-15', N'Activo', NULL),
+('EQ003', 'AUL003', N'DL45678', 'MOD003', N'Alta', '2024-04-20', N'Fuera de servicio', '2026-05-21'),
+('EQ004', 'AUL004', N'LN78901', 'MOD004', N'Baja', '2024-05-05', N'Inactivo', NULL),
+('EQ005', 'AUL005', N'CS2960-001', 'MOD005', N'Alta', '2024-06-11', N'Activo', NULL),
+('EQ006', 'AUL006', N'ARD-UNO-006', 'MOD006', N'Media', '2024-07-18', N'Activo', NULL),
+('EQ007', 'AUL007', N'RPI4-007', 'MOD007', N'Media', '2024-08-09', N'Activo', NULL),
+('EQ008', 'AUL008', N'HP-LJ-008', 'MOD008', N'Baja', '2024-09-22', N'Activo', NULL),
+('EQ009', 'AUL009', N'DELL-INS-009', 'MOD009', N'Alta', '2024-10-13', N'Activo', NULL),
+('EQ010', 'AUL010', N'LEN-IC3-010', 'MOD010', N'Media', '2024-11-25', N'Activo', NULL);
 GO
 
-INSERT INTO Ordenes_de_Trabajo (
+INSERT INTO Inventario.Repuestos (id_repuesto, nombre_repuesto, categoria, unidad_medida, cantidad_disponible, stock_minimo, costo_unitario, estado) VALUES
+('R001', N'Fuente de poder', N'Hardware', N'Unidad', 10, 2, 850.00, N'Activo'),
+('R002', N'Cable HDMI', N'Accesorio', N'Unidad', 25, 5, 180.00, N'Activo'),
+('R003', N'Pasta térmica', N'Insumo', N'Unidad', 15, 3, 120.00, N'Activo'),
+('R004', N'Cable de red', N'Accesorio', N'Unidad', 30, 6, 90.00, N'Activo'),
+('R005', N'Memoria RAM 8GB', N'Hardware', N'Unidad', 12, 3, 950.00, N'Activo'),
+('R006', N'Disco SSD 480GB', N'Almacenamiento', N'Unidad', 8, 2, 1450.00, N'Activo'),
+('R007', N'Teclado USB', N'Periférico', N'Unidad', 20, 5, 260.00, N'Activo'),
+('R008', N'Mouse óptico', N'Periférico', N'Unidad', 22, 5, 150.00, N'Activo'),
+('R009', N'Cartucho de tinta', N'Impresión', N'Unidad', 14, 4, 700.00, N'Activo'),
+('R010', N'Batería CMOS', N'Hardware', N'Unidad', 18, 5, 80.00, N'Activo');
+GO
+
+INSERT INTO Mantenimiento.Ordenes_de_Trabajo (
     id_orden, id_equipo, id_tecnico, id_falla, tipo_mantenimiento, prioridad_orden,
     fecha_creacion, estado_orden, diagnostico, actividades_realizadas,
     resultado_final, fecha_cierre, id_usuario_reporta
 ) VALUES
-('O001', 'EQ001', 'T001', 'F001', 'Correctivo', 'Alta', '2026-05-10', 'Cerrada', 'Fuente dañada', 'Revisión y cambio de fuente', 'Equipo reparado', '2026-05-12', 'U004'),
-('O002', 'EQ002', 'T002', 'F002', 'Correctivo', 'Media', '2026-05-11', 'En proceso', 'Pendiente de revisión', 'Diagnóstico inicial', 'Pendiente', NULL, 'U004'),
-('O003', 'EQ003', 'T003', NULL, 'Preventivo', 'Media', '2026-05-13', 'Programada', 'Pendiente de revisión', 'Limpieza programada', 'Pendiente', NULL, 'U001'),
-('O004', 'EQ004', 'T004', 'F004', 'Correctivo', 'Baja', '2026-05-14', 'Cerrada', 'Cable dañado', 'Cambio de cable', 'Equipo funcional', '2026-05-15', 'U003');
+('O001', 'EQ001', 'T001', 'F001', N'Correctivo', N'Alta', '2026-05-10', N'Cerrada', N'Fuente dañada', N'Revisión y cambio de fuente', N'Equipo reparado', '2026-05-12', 'U004'),
+('O002', 'EQ002', 'T002', 'F002', N'Correctivo', N'Media', '2026-05-11', N'En proceso', N'Pendiente de revisión', N'Diagnóstico inicial', N'Pendiente', NULL, 'U004'),
+('O003', 'EQ003', 'T003', NULL, N'Preventivo', N'Media', '2026-05-13', N'Programada', N'Pendiente de revisión', N'Limpieza programada', N'Pendiente', NULL, 'U001'),
+('O004', 'EQ004', 'T004', 'F004', N'Correctivo', N'Baja', '2026-05-14', N'Cerrada', N'Cable dañado', N'Cambio de cable', N'Equipo funcional', '2026-05-15', 'U003'),
+('O005', 'EQ005', 'T005', NULL, N'Preventivo', N'Alta', '2026-05-16', N'Programada', N'Revisión preventiva planificada', N'Pendiente', N'Pendiente', NULL, 'U014'),
+('O006', 'EQ006', 'T006', 'F006', N'Correctivo', N'Media', '2026-05-17', N'En proceso', N'Falla intermitente de encendido', N'Pruebas iniciales', N'Pendiente', NULL, 'U004'),
+('O007', 'EQ007', 'T007', NULL, N'Preventivo', N'Baja', '2026-05-18', N'Cerrada', N'Mantenimiento preventivo completado', N'Limpieza y actualización básica', N'Equipo operativo', '2026-05-19', 'U003'),
+('O008', 'EQ008', 'T008', 'F008', N'Correctivo', N'Media', '2026-05-20', N'Cerrada', N'Atasco de impresión', N'Limpieza de rodillos y cambio de cartucho', N'Impresora funcional', '2026-05-21', 'U014'),
+('O009', 'EQ009', 'T009', NULL, N'Preventivo', N'Media', '2026-05-22', N'Programada', N'Revisión de rendimiento planificada', N'Pendiente', N'Pendiente', NULL, 'U001'),
+('O010', 'EQ010', 'T010', 'F010', N'Correctivo', N'Alta', '2026-05-23', N'Cerrada', N'Disco con errores', N'Cambio de SSD y pruebas', N'Equipo reparado', '2026-05-24', 'U004');
 GO
 
-INSERT INTO Repuestos (id_repuesto, nombre_repuesto, categoria, unidad_medida, cantidad_disponible, stock_minimo, costo_unitario, estado) VALUES
-('R001', 'Fuente de poder', 'Hardware', 'Unidad', 10, 2, 850.00, 'Activo'),
-('R002', 'Cable HDMI', 'Accesorio', 'Unidad', 25, 5, 180.00, 'Activo'),
-('R003', 'Pasta térmica', 'Insumo', 'Unidad', 15, 3, 120.00, 'Activo'),
-('R004', 'Cable de red', 'Accesorio', 'Unidad', 30, 6, 90.00, 'Activo');
-GO
-
-INSERT INTO Detalle_Orden_Repuesto (id_orden, id_repuesto, cantidad_usada) VALUES
+INSERT INTO Mantenimiento.Detalle_Orden_Repuesto (id_orden, id_repuesto, cantidad_usada) VALUES
 ('O001', 'R001', 1),
 ('O001', 'R003', 1),
 ('O002', 'R002', 1),
-('O004', 'R004', 2);
+('O004', 'R004', 2),
+('O006', 'R010', 1),
+('O007', 'R003', 1),
+('O008', 'R009', 1),
+('O008', 'R004', 1),
+('O010', 'R006', 1),
+('O010', 'R005', 1);
 GO
-
-/* ============================================================
-   CONSULTAS DE VERIFICACIÓN DE RELACIONES
-   ============================================================ 
-
--- Usuarios con su rol
-SELECT u.id_usuario, u.nombre, u.apellido, r.nombre_rol, u.estado_usuario
-FROM Usuarios u
-INNER JOIN Roles r ON u.id_rol = r.id_rol;
-GO
-
--- Equipos con aula, edificio y modelo/marca
-SELECT e.id_equipo, e.numero_serie, a.referencia, ed.nombre_edificio, m.nombre_modelo, m.marca, e.estado_equipo
-FROM Equipos e
-INNER JOIN Aula a ON e.aula_id = a.aula_id
-INNER JOIN Edificio ed ON a.id_edificio = ed.id_edificio
-INNER JOIN Modelos m ON e.id_modelo = m.id_modelo;
-GO
-
--- Órdenes con equipo, técnico y usuario reportante
-SELECT o.id_orden, o.tipo_mantenimiento, o.estado_orden, eq.numero_serie,
-       t.id_tecnico, uTec.nombre AS tecnico_nombre, uRep.nombre AS reporta_nombre
-FROM Ordenes_de_Trabajo o
-INNER JOIN Equipos eq ON o.id_equipo = eq.id_equipo
-INNER JOIN Tecnicos t ON o.id_tecnico = t.id_tecnico
-INNER JOIN Usuarios uTec ON t.id_usuario = uTec.id_usuario
-INNER JOIN Usuarios uRep ON o.id_usuario_reporta = uRep.id_usuario;
-GO
-
--- Repuestos utilizados por orden
-SELECT d.id_orden, r.nombre_repuesto, d.cantidad_usada, r.costo_unitario,
-       d.cantidad_usada * r.costo_unitario AS costo_total
-FROM Detalle_Orden_Repuesto d
-INNER JOIN Repuestos r ON d.id_repuesto = r.id_repuesto;
-GO
-*/
