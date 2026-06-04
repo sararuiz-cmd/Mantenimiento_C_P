@@ -1,5 +1,10 @@
 /* ============================================================
    Proyecto: Base de datos para gestión de mantenimiento
+    SCHEMAS:
+   - Seguridad: roles, usuarios y técnicos.
+   - Infraestructura: edificios, aulas y laboratorios.
+   - Inventario: modelos, equipos y repuestos.
+   - Mantenimiento: órdenes de trabajo y detalle de repuestos usados.
    ============================================================ */
 
 USE master;
@@ -15,6 +20,17 @@ CREATE DATABASE BD_Mantenimiento_Laboratorios;
 GO
 
 USE BD_Mantenimiento_Laboratorios;
+GO
+/* ============================================================
+   CREACIÓN DE SCHEMAS
+   ============================================================ */
+CREATE SCHEMA Seguridad;
+GO
+CREATE SCHEMA Infraestructura;
+GO
+CREATE SCHEMA Inventario;
+GO
+CREATE SCHEMA Mantenimiento;
 GO
 
 
