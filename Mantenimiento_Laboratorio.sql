@@ -54,30 +54,37 @@ GO
 
 CREATE TABLE Seguridad.Usuarios (
     id_usuario CHAR(4) NOT NULL,
-    nombre NVARCHAR(50) NOT NULL,
-    apellido NVARCHAR(50) NOT NULL,
-    correo NVARCHAR(100) NOT NULL,
+    nombre VARCHAR(50) NOT NULL,
+    apellido VARCHAR(50) NOT NULL,
+    correo VARCHAR(100) NOT NULL,
     telefono VARCHAR(15) NOT NULL,
-    contrasena_hash NVARCHAR(255) NOT NULL,
+    pw VARBINARY(64) NOT NULL,
     id_rol CHAR(4) NOT NULL,
-    estado_usuario NVARCHAR(20) NOT NULL CONSTRAINT DF_Usuarios_estado_usuario DEFAULT N'Activo',
-    created_at DATETIME NOT NULL CONSTRAINT DF_Usuarios_created_at DEFAULT GETDATE(),
+    estado_usuario VARCHAR(20) NOT NULL DEFAULT 'Activo',
+
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Usuarios PRIMARY KEY (id_usuario),
-    CONSTRAINT UQ_Usuarios_correo UNIQUE (correo),
-    CONSTRAINT CK_Usuarios_id_formato CHECK (id_usuario LIKE 'U[0-9][0-9][0-9]'),
-    CONSTRAINT CK_Usuarios_correo CHECK (correo LIKE '%_@_%._%'),
-    CONSTRAINT CK_Usuarios_telefono CHECK (telefono LIKE '[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]'),
-    CONSTRAINT CK_Usuarios_estado_usuario CHECK (estado_usuario IN (N'Activo', N'Inactivo')),
-    CONSTRAINT FK_Usuarios_Roles FOREIGN KEY (id_rol)
-        REFERENCES Seguridad.Roles(id_rol)
-        ON DELETE NO ACTION
-        ON UPDATE CASCADE
-);
-GO
 
+    CONSTRAINT UQ_Usuarios_correo UNIQUE (correo),
+
+    CONSTRAINT CK_Usuarios_id_formato 
+    CHECK (id_usuario LIKE 'U[0-9][0-9][0-9]'),
+
+    CONSTRAINT CK_Usuarios_estado 
+    CHECK (estado_usuario IN ('Activo', 'Inactivo')),
+
+    CONSTRAINT CK_Usuarios_pw 
+    CHECK (DATALENGTH(pw) > 0),
+
+    CONSTRAINT FK_Usuarios_Roles 
+    FOREIGN KEY (id_rol) 
+    REFERENCES Seguridad.Roles(id_rol)
+    ON DELETE NO ACTION
+    ON UPDATE CASCADE
+);
 CREATE TABLE Seguridad.Tecnicos (
     id_tecnico CHAR(4) NOT NULL,
     id_usuario CHAR(4) NOT NULL,
@@ -321,8 +328,7 @@ CREATE TABLE Mantenimiento.Detalle_Orden_Repuesto (
 GO
 
 /* ============================================================
-   INSERCIÓN DE DATOS SIMULADOS
-
+   INSERCIÓN DE DATOS 
    ============================================================ */
 INSERT INTO Seguridad.Roles (id_rol, nombre_rol, descripcion_rol) VALUES
 ('R001', N'Administrador', N'Usuario con permisos de gestión general'),
@@ -336,25 +342,38 @@ INSERT INTO Seguridad.Roles (id_rol, nombre_rol, descripcion_rol) VALUES
 ('R009', N'Coordinador', N'Usuario que coordina laboratorios'),
 ('R010', N'Auxiliar', N'Usuario con apoyo operativo');
 GO
+INSERT INTO Seguridad.Usuarios 
+(id_usuario, nombre, apellido, correo, telefono, pw, id_rol, estado_usuario)
+VALUES
+('U001', 'Sara', 'Ruiz', 'sara@gmail.com', '8888-1111', 
+ HASHBYTES('SHA2_512', 'pw_001'), 'R001', 'Activo'),
 
-INSERT INTO Seguridad.Usuarios (id_usuario, nombre, apellido, correo, telefono, contrasena_hash, id_rol, estado_usuario) VALUES
-('U001', N'Sara', N'Ruiz', N'sara@gmail.com', '8888-1111', N'hash_001', 'R001', N'Activo'),
-('U002', N'Jorge', N'Delgado', N'jorge@gmail.com', '7777-2222', N'hash_002', 'R002', N'Activo'),
-('U003', N'Enrique', N'Arana', N'enrique@gmail.com', '8666-3333', N'hash_003', 'R003', N'Activo'),
-('U004', N'Jhesly', N'Castillo', N'jhesly@gmail.com', '8555-4444', N'hash_004', 'R004', N'Activo'),
-('U005', N'Carlos', N'Méndez', N'carlos@gmail.com', '8444-5555', N'hash_005', 'R002', N'Activo'),
-('U006', N'Valeria', N'López', N'valeria@gmail.com', '8333-6666', N'hash_006', 'R002', N'Activo'),
-('U007', N'Mario', N'Pérez', N'mario@gmail.com', '8222-7777', N'hash_007', 'R002', N'Activo'),
-('U008', N'Ana', N'García', N'ana@gmail.com', '8111-8888', N'hash_008', 'R002', N'Activo'),
-('U009', N'Luis', N'Ramírez', N'luis@gmail.com', '8999-9999', N'hash_009', 'R002', N'Activo'),
-('U010', N'Karla', N'Torres', N'karla@gmail.com', '8777-1212', N'hash_010', 'R002', N'Activo'),
-('U011', N'Diego', N'Vargas', N'diego@gmail.com', '8666-2323', N'hash_011', 'R002', N'Activo'),
-('U012', N'Lucía', N'Navarro', N'lucia@gmail.com', '8555-3434', N'hash_012', 'R002', N'Activo'),
-('U013', N'Pedro', N'Morales', N'pedro@gmail.com', '8444-4545', N'hash_013', 'R002', N'Activo'),
-('U014', N'Rosa', N'Herrera', N'rosa@gmail.com', '8333-5656', N'hash_014', 'R005', N'Activo'),
-('U015', N'Gabriel', N'Castro', N'gabriel@gmail.com', '8222-6767', N'hash_015', 'R006', N'Activo');
-GO
+('U002', 'Jorge', 'Delgado', 'jorge@gmail.com', '7777-2222', 
+ HASHBYTES('SHA2_512', 'pw_002'), 'R002', 'Activo'),
 
+('U003', 'Enrique', 'Arana', 'enrique@gmail.com', '8666-3333', 
+ HASHBYTES('SHA2_512', 'pw_003'), 'R003', 'Activo'),
+
+('U004', 'Jhesly', 'Castillo', 'jhesly@gmail.com', '8555-4444', 
+ HASHBYTES('SHA2_512', 'pw_004'), 'R004', 'Activo'),
+
+('U005', 'Carlos', 'Mendez', 'carlos@gmail.com', '8444-5555', 
+ HASHBYTES('SHA2_512', 'pw_005'), 'R002', 'Activo'),
+
+('U006', 'Valeria', 'Lopez', 'valeria@gmail.com', '8333-6666', 
+ HASHBYTES('SHA2_512', 'pw_006'), 'R002', 'Activo'),
+
+('U007', 'Mario', 'Perez', 'mario@gmail.com', '8222-7777', 
+ HASHBYTES('SHA2_512', 'pw_007'), 'R002', 'Activo'),
+
+('U008', 'Andrea', 'Gomez', 'andrea@gmail.com', '8111-8888', 
+ HASHBYTES('SHA2_512', 'pw_008'), 'R003', 'Activo'),
+
+('U009', 'Luis', 'Martinez', 'luis@gmail.com', '8999-0000', 
+ HASHBYTES('SHA2_512', 'pw_009'), 'R004', 'Activo'),
+
+('U010', 'Mariana', 'Torres', 'mariana@gmail.com', '8000-1111', 
+ HASHBYTES('SHA2_512', 'pw_010'), 'R001', 'Inactivo');
 INSERT INTO Seguridad.Tecnicos (id_tecnico, id_usuario, especialidad, disponibilidad, estado_tecnico) VALUES
 ('T001', 'U002', N'Hardware', N'Disponible', N'Activo'),
 ('T002', 'U005', N'Redes', N'Ocupado', N'Activo'),
