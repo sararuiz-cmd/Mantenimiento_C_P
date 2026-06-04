@@ -333,6 +333,8 @@ CREATE TABLE Repuestos (
     -- RESTRICCIONES (PK, CK)
     CONSTRAINT PK_Repuestos 
         PRIMARY KEY (id_repuesto),
+        CONSTRAINT UQ_Repuestos_nombre
+    UNIQUE (nombre_repuesto),
     CONSTRAINT CK_Repuestos_cantidad_no_negativa 
         CHECK (cantidad_disponible >= 0),
     CONSTRAINT CK_Repuestos_stock_minimo 
