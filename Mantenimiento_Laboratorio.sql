@@ -374,6 +374,8 @@ VALUES
 
 ('U010', 'Mariana', 'Torres', 'mariana@gmail.com', '8000-1111', 
  HASHBYTES('SHA2_512', 'pw_010'), 'R001', 'Inactivo');
+GO
+
 INSERT INTO Seguridad.Tecnicos (id_tecnico, id_usuario, especialidad, disponibilidad, estado_tecnico) VALUES
 ('T001', 'U002', N'Hardware', N'Disponible', N'Activo'),
 ('T002', 'U005', N'Redes', N'Ocupado', N'Activo'),
@@ -382,9 +384,9 @@ INSERT INTO Seguridad.Tecnicos (id_tecnico, id_usuario, especialidad, disponibil
 ('T005', 'U008', N'Electrónica', N'No disponible', N'Activo'),
 ('T006', 'U009', N'Climatización', N'Disponible', N'Activo'),
 ('T007', 'U010', N'Equipos de medición', N'Ocupado', N'Activo'),
-('T008', 'U011', N'Cableado estructurado', N'Disponible', N'Activo'),
-('T009', 'U012', N'Mantenimiento preventivo', N'Disponible', N'Activo'),
-('T010', 'U013', N'Soporte general', N'Disponible', N'Activo');
+('T008', 'U001', N'Cableado estructurado', N'Disponible', N'Activo'),
+('T009', 'U003', N'Mantenimiento preventivo', N'Disponible', N'Activo'),
+('T010', 'U004', N'Soporte general', N'Disponible', N'Activo');
 GO
 
 INSERT INTO Infraestructura.Edificios (id_edificio, nombre_edificio, cantidad_pisos) VALUES
@@ -474,10 +476,10 @@ INSERT INTO Mantenimiento.Ordenes_de_Trabajo (
 ('O002', 'EQ002', 'T002', 'F002', N'Correctivo', N'Media', '2026-05-11', N'En proceso', N'Pendiente de revisión', N'Diagnóstico inicial', N'Pendiente', NULL, 'U004'),
 ('O003', 'EQ003', 'T003', NULL, N'Preventivo', N'Media', '2026-05-13', N'Programada', N'Pendiente de revisión', N'Limpieza programada', N'Pendiente', NULL, 'U001'),
 ('O004', 'EQ004', 'T004', 'F004', N'Correctivo', N'Baja', '2026-05-14', N'Cerrada', N'Cable dañado', N'Cambio de cable', N'Equipo funcional', '2026-05-15', 'U003'),
-('O005', 'EQ005', 'T005', NULL, N'Preventivo', N'Alta', '2026-05-16', N'Programada', N'Revisión preventiva planificada', N'Pendiente', N'Pendiente', NULL, 'U014'),
+('O005', 'EQ005', 'T005', NULL, N'Preventivo', N'Alta', '2026-05-16', N'Programada', N'Revisión preventiva planificada', N'Pendiente', N'Pendiente', NULL, 'U009'),
 ('O006', 'EQ006', 'T006', 'F006', N'Correctivo', N'Media', '2026-05-17', N'En proceso', N'Falla intermitente de encendido', N'Pruebas iniciales', N'Pendiente', NULL, 'U004'),
 ('O007', 'EQ007', 'T007', NULL, N'Preventivo', N'Baja', '2026-05-18', N'Cerrada', N'Mantenimiento preventivo completado', N'Limpieza y actualización básica', N'Equipo operativo', '2026-05-19', 'U003'),
-('O008', 'EQ008', 'T008', 'F008', N'Correctivo', N'Media', '2026-05-20', N'Cerrada', N'Atasco de impresión', N'Limpieza de rodillos y cambio de cartucho', N'Impresora funcional', '2026-05-21', 'U014'),
+('O008', 'EQ008', 'T008', 'F008', N'Correctivo', N'Media', '2026-05-20', N'Cerrada', N'Atasco de impresión', N'Limpieza de rodillos y cambio de cartucho', N'Impresora funcional', '2026-05-21', 'U009'),
 ('O009', 'EQ009', 'T009', NULL, N'Preventivo', N'Media', '2026-05-22', N'Programada', N'Revisión de rendimiento planificada', N'Pendiente', N'Pendiente', NULL, 'U001'),
 ('O010', 'EQ010', 'T010', 'F010', N'Correctivo', N'Alta', '2026-05-23', N'Cerrada', N'Disco con errores', N'Cambio de SSD y pruebas', N'Equipo reparado', '2026-05-24', 'U004');
 GO
