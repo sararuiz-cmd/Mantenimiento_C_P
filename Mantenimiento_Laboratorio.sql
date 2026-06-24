@@ -1,43 +1,57 @@
 /* ============================================================
    Proyecto: Base de datos para gestión de mantenimiento
-    SCHEMAS:
+   Versión: Tablas finales en 3FN
+   Base de datos: BD_Mantenimiento_Laboratorios
+
+   SCHEMAS:
    - Seguridad: roles, usuarios y técnicos.
    - Infraestructura: edificios, aulas y laboratorios.
    - Inventario: modelos, equipos y repuestos.
    - Mantenimiento: órdenes de trabajo y detalle de repuestos usados.
+
+   NOTAS:
+   - Script preparado para ejecutarse una sola vez sin errores.
+   - Mantiene los campos de auditoría: created_at, updated_at, deleted_at.
+   - La contraseña se almacena como pw VARBINARY(64) NOT NULL.
+   - No se agregan triggers, procedimientos ni funciones complejas.
    ============================================================ */
 
 USE master;
 GO
+
 
 IF EXISTS (SELECT 1 FROM sys.databases WHERE name = N'BD_Mantenimiento_Laboratorios')
 BEGIN
     DROP DATABASE BD_Mantenimiento_Laboratorios;
 END;
 GO
-
 CREATE DATABASE BD_Mantenimiento_Laboratorios;
 GO
 
 USE BD_Mantenimiento_Laboratorios;
 GO
+
 /* ============================================================
    CREACIÓN DE SCHEMAS
    ============================================================ */
+
 CREATE SCHEMA Seguridad;
 GO
+
 CREATE SCHEMA Infraestructura;
 GO
+
 CREATE SCHEMA Inventario;
 GO
+
 CREATE SCHEMA Mantenimiento;
 GO
 
-
 /* ============================================================
    SCHEMA: Seguridad
-   Módulo relacionado: SM01 Gestión de usuarios, roles y técnicos
+   Entidad: Roles
    ============================================================ */
+
 CREATE TABLE Seguridad.Roles (
     id_rol CHAR(4) NOT NULL,
     nombre_rol NVARCHAR(30) NOT NULL,
@@ -52,6 +66,11 @@ CREATE TABLE Seguridad.Roles (
 );
 GO
 
+/* ============================================================
+   SCHEMA: Seguridad
+   Entidad: Usuarios
+   ============================================================ */
+
 CREATE TABLE Seguridad.Usuarios (
     id_usuario CHAR(4) NOT NULL,
     nombre VARCHAR(50) NOT NULL,
@@ -60,31 +79,29 @@ CREATE TABLE Seguridad.Usuarios (
     telefono VARCHAR(15) NOT NULL,
     pw VARBINARY(64) NOT NULL,
     id_rol CHAR(4) NOT NULL,
-    estado_usuario VARCHAR(20) NOT NULL DEFAULT 'Activo',
-
-    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    estado_usuario VARCHAR(20) NOT NULL CONSTRAINT DF_Usuarios_estado_usuario DEFAULT 'Activo',
+    created_at DATETIME NOT NULL CONSTRAINT DF_Usuarios_created_at DEFAULT GETDATE(),
     updated_at DATETIME NULL,
     deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Usuarios PRIMARY KEY (id_usuario),
-
     CONSTRAINT UQ_Usuarios_correo UNIQUE (correo),
+    CONSTRAINT CK_Usuarios_id_formato CHECK (id_usuario LIKE 'U[0-9][0-9][0-9]'),
+    CONSTRAINT CK_Usuarios_estado CHECK (estado_usuario IN ('Activo', 'Inactivo')),
+    CONSTRAINT CK_Usuarios_pw CHECK (DATALENGTH(pw) > 0),
 
-    CONSTRAINT CK_Usuarios_id_formato 
-    CHECK (id_usuario LIKE 'U[0-9][0-9][0-9]'),
-
-    CONSTRAINT CK_Usuarios_estado 
-    CHECK (estado_usuario IN ('Activo', 'Inactivo')),
-
-    CONSTRAINT CK_Usuarios_pw 
-    CHECK (DATALENGTH(pw) > 0),
-
-    CONSTRAINT FK_Usuarios_Roles 
-    FOREIGN KEY (id_rol) 
-    REFERENCES Seguridad.Roles(id_rol)
-    ON DELETE NO ACTION
-    ON UPDATE CASCADE
+    CONSTRAINT FK_Usuarios_Roles FOREIGN KEY (id_rol)
+        REFERENCES Seguridad.Roles(id_rol)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE
 );
+GO
+
+/* ============================================================
+   SCHEMA: Seguridad
+   Entidad: Técnicos
+   ============================================================ */
+
 CREATE TABLE Seguridad.Tecnicos (
     id_tecnico CHAR(4) NOT NULL,
     id_usuario CHAR(4) NOT NULL,
@@ -100,6 +117,7 @@ CREATE TABLE Seguridad.Tecnicos (
     CONSTRAINT CK_Tecnicos_id_formato CHECK (id_tecnico LIKE 'T[0-9][0-9][0-9]'),
     CONSTRAINT CK_Tecnicos_disponibilidad CHECK (disponibilidad IN (N'Disponible', N'Ocupado', N'No disponible')),
     CONSTRAINT CK_Tecnicos_estado_tecnico CHECK (estado_tecnico IN (N'Activo', N'Inactivo')),
+
     CONSTRAINT FK_Tecnicos_Usuarios FOREIGN KEY (id_usuario)
         REFERENCES Seguridad.Usuarios(id_usuario)
         ON DELETE NO ACTION
@@ -109,8 +127,9 @@ GO
 
 /* ============================================================
    SCHEMA: Infraestructura
-   Módulo relacionado: SM02 Gestión de laboratorios, edificios y aulas
+   Entidad: Edificios
    ============================================================ */
+
 CREATE TABLE Infraestructura.Edificios (
     id_edificio CHAR(6) NOT NULL,
     nombre_edificio NVARCHAR(50) NOT NULL,
@@ -125,6 +144,11 @@ CREATE TABLE Infraestructura.Edificios (
 );
 GO
 
+/* ============================================================
+   SCHEMA: Infraestructura
+   Entidad: Aulas
+   ============================================================ */
+
 CREATE TABLE Infraestructura.Aulas (
     aula_id VARCHAR(20) NOT NULL,
     referencia NVARCHAR(100) NULL,
@@ -136,15 +160,20 @@ CREATE TABLE Infraestructura.Aulas (
     deleted_at DATETIME NULL,
 
     CONSTRAINT PK_Aulas PRIMARY KEY (aula_id),
-    CONSTRAINT UQ_Aulas_edificio_piso_referencia UNIQUE (id_edificio, piso, referencia),
     CONSTRAINT CK_Aulas_estado_aula CHECK (estado_aula IN (N'Activa', N'Inactiva')),
     CONSTRAINT CK_Aulas_piso CHECK (piso > 0),
+
     CONSTRAINT FK_Aulas_Edificios FOREIGN KEY (id_edificio)
         REFERENCES Infraestructura.Edificios(id_edificio)
         ON DELETE NO ACTION
         ON UPDATE CASCADE
 );
 GO
+
+/* ============================================================
+   SCHEMA: Infraestructura
+   Entidad: Laboratorios
+   ============================================================ */
 
 CREATE TABLE Infraestructura.Laboratorios (
     id_laboratorio CHAR(4) NOT NULL,
@@ -162,10 +191,12 @@ CREATE TABLE Infraestructura.Laboratorios (
     CONSTRAINT UQ_Laboratorios_aula_id UNIQUE (aula_id),
     CONSTRAINT CK_Laboratorios_id_formato CHECK (id_laboratorio LIKE 'L[0-9][0-9][0-9]'),
     CONSTRAINT CK_Laboratorios_estado_laboratorio CHECK (estado_laboratorio IN (N'Activo', N'Inactivo')),
+
     CONSTRAINT FK_Laboratorios_Usuarios FOREIGN KEY (id_responsable)
         REFERENCES Seguridad.Usuarios(id_usuario)
         ON DELETE NO ACTION
         ON UPDATE NO ACTION,
+
     CONSTRAINT FK_Laboratorios_Aulas FOREIGN KEY (aula_id)
         REFERENCES Infraestructura.Aulas(aula_id)
         ON DELETE NO ACTION
@@ -175,8 +206,9 @@ GO
 
 /* ============================================================
    SCHEMA: Inventario
-   Módulos relacionados: SM03 Gestión de equipos y SM07 Gestión de repuestos y costos
+   Entidad: Modelos
    ============================================================ */
+
 CREATE TABLE Inventario.Modelos (
     id_modelo CHAR(6) NOT NULL,
     nombre_modelo NVARCHAR(100) NOT NULL,
@@ -190,6 +222,11 @@ CREATE TABLE Inventario.Modelos (
     CONSTRAINT CK_Modelos_id_formato CHECK (id_modelo LIKE 'MOD[0-9][0-9][0-9]')
 );
 GO
+
+/* ============================================================
+   SCHEMA: Inventario
+   Entidad: Equipos
+   ============================================================ */
 
 CREATE TABLE Inventario.Equipos (
     id_equipo CHAR(5) NOT NULL,
@@ -211,16 +248,23 @@ CREATE TABLE Inventario.Equipos (
     CONSTRAINT CK_Equipos_estado_equipo CHECK (estado_equipo IN (N'Activo', N'Inactivo', N'Fuera de servicio')),
     CONSTRAINT CK_Equipos_fecha_fuera_servicio CHECK (fecha_fuera_servicio IS NULL OR fecha_fuera_servicio >= fecha_adquisicion),
     CONSTRAINT CK_Equipos_activo_sin_fecha_fuera CHECK (estado_equipo <> N'Activo' OR fecha_fuera_servicio IS NULL),
+
     CONSTRAINT FK_Equipos_Aulas FOREIGN KEY (aula_id)
         REFERENCES Infraestructura.Aulas(aula_id)
         ON DELETE NO ACTION
         ON UPDATE CASCADE,
+
     CONSTRAINT FK_Equipos_Modelos FOREIGN KEY (id_modelo)
         REFERENCES Inventario.Modelos(id_modelo)
         ON DELETE NO ACTION
         ON UPDATE CASCADE
 );
 GO
+
+/* ============================================================
+   SCHEMA: Inventario
+   Entidad: Repuestos
+   ============================================================ */
 
 CREATE TABLE Inventario.Repuestos (
     id_repuesto CHAR(4) NOT NULL,
@@ -244,10 +288,12 @@ CREATE TABLE Inventario.Repuestos (
     CONSTRAINT CK_Repuestos_estado CHECK (estado IN (N'Activo', N'Inactivo'))
 );
 GO
+
 /* ============================================================
    SCHEMA: Mantenimiento
-   Módulos relacionados: SM05, SM06 y SM07
+   Entidad: Ordenes_de_Trabajo
    ============================================================ */
+
 CREATE TABLE Mantenimiento.Ordenes_de_Trabajo (
     id_orden CHAR(4) NOT NULL,
     id_equipo CHAR(5) NOT NULL,
@@ -272,11 +318,13 @@ CREATE TABLE Mantenimiento.Ordenes_de_Trabajo (
     CONSTRAINT CK_Ordenes_prioridad_orden CHECK (prioridad_orden IN (N'Baja', N'Media', N'Alta')),
     CONSTRAINT CK_Ordenes_estado_orden CHECK (estado_orden IN (N'Programada', N'En proceso', N'Cerrada')),
     CONSTRAINT CK_Ordenes_fecha_cierre CHECK (fecha_cierre IS NULL OR fecha_cierre >= fecha_creacion),
+
     CONSTRAINT CK_Ordenes_falla_segun_tipo CHECK (
         (tipo_mantenimiento = N'Correctivo' AND id_falla IS NOT NULL)
         OR
         (tipo_mantenimiento = N'Preventivo' AND id_falla IS NULL)
     ),
+
     CONSTRAINT CK_Ordenes_cierre_obligatorio CHECK (
         (
             estado_orden = N'Cerrada'
@@ -291,20 +339,28 @@ CREATE TABLE Mantenimiento.Ordenes_de_Trabajo (
             AND fecha_cierre IS NULL
         )
     ),
+
     CONSTRAINT FK_Ordenes_Equipos FOREIGN KEY (id_equipo)
         REFERENCES Inventario.Equipos(id_equipo)
         ON DELETE NO ACTION
         ON UPDATE CASCADE,
+
     CONSTRAINT FK_Ordenes_Tecnicos FOREIGN KEY (id_tecnico)
         REFERENCES Seguridad.Tecnicos(id_tecnico)
         ON DELETE NO ACTION
         ON UPDATE CASCADE,
+
     CONSTRAINT FK_Ordenes_Usuarios_Reporta FOREIGN KEY (id_usuario_reporta)
         REFERENCES Seguridad.Usuarios(id_usuario)
         ON DELETE NO ACTION
         ON UPDATE NO ACTION
 );
 GO
+
+/* ============================================================
+   SCHEMA: Mantenimiento
+   Entidad: Detalle_Orden_Repuesto
+   ============================================================ */
 
 CREATE TABLE Mantenimiento.Detalle_Orden_Repuesto (
     id_orden CHAR(4) NOT NULL,
@@ -316,10 +372,12 @@ CREATE TABLE Mantenimiento.Detalle_Orden_Repuesto (
 
     CONSTRAINT PK_Detalle_Orden_Repuesto PRIMARY KEY (id_orden, id_repuesto),
     CONSTRAINT CK_Detalle_cantidad_usada CHECK (cantidad_usada >= 1),
+
     CONSTRAINT FK_Detalle_Ordenes FOREIGN KEY (id_orden)
         REFERENCES Mantenimiento.Ordenes_de_Trabajo(id_orden)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
+
     CONSTRAINT FK_Detalle_Repuestos FOREIGN KEY (id_repuesto)
         REFERENCES Inventario.Repuestos(id_repuesto)
         ON DELETE NO ACTION
@@ -328,8 +386,11 @@ CREATE TABLE Mantenimiento.Detalle_Orden_Repuesto (
 GO
 
 /* ============================================================
-   INSERCIÓN DE DATOS 
+   INSERCIÓN DE DATOS DE PRUEBA
+   10 registros por tabla
    ============================================================ */
+
+/* Seguridad.Roles */
 INSERT INTO Seguridad.Roles (id_rol, nombre_rol, descripcion_rol) VALUES
 ('R001', N'Administrador', N'Usuario con permisos de gestión general'),
 ('R002', N'Técnico', N'Usuario encargado de atender órdenes de mantenimiento'),
@@ -342,41 +403,27 @@ INSERT INTO Seguridad.Roles (id_rol, nombre_rol, descripcion_rol) VALUES
 ('R009', N'Coordinador', N'Usuario que coordina laboratorios'),
 ('R010', N'Auxiliar', N'Usuario con apoyo operativo');
 GO
+
+/* Seguridad.Usuarios */
 INSERT INTO Seguridad.Usuarios 
 (id_usuario, nombre, apellido, correo, telefono, pw, id_rol, estado_usuario)
 VALUES
-('U001', 'Sara', 'Ruiz', 'sara@gmail.com', '8888-1111', 
- HASHBYTES('SHA2_512', 'pw_001'), 'R001', 'Activo'),
-
-('U002', 'Jorge', 'Delgado', 'jorge@gmail.com', '7777-2222', 
- HASHBYTES('SHA2_512', 'pw_002'), 'R002', 'Activo'),
-
-('U003', 'Enrique', 'Arana', 'enrique@gmail.com', '8666-3333', 
- HASHBYTES('SHA2_512', 'pw_003'), 'R003', 'Activo'),
-
-('U004', 'Jhesly', 'Castillo', 'jhesly@gmail.com', '8555-4444', 
- HASHBYTES('SHA2_512', 'pw_004'), 'R004', 'Activo'),
-
-('U005', 'Carlos', 'Mendez', 'carlos@gmail.com', '8444-5555', 
- HASHBYTES('SHA2_512', 'pw_005'), 'R002', 'Activo'),
-
-('U006', 'Valeria', 'Lopez', 'valeria@gmail.com', '8333-6666', 
- HASHBYTES('SHA2_512', 'pw_006'), 'R002', 'Activo'),
-
-('U007', 'Mario', 'Perez', 'mario@gmail.com', '8222-7777', 
- HASHBYTES('SHA2_512', 'pw_007'), 'R002', 'Activo'),
-
-('U008', 'Andrea', 'Gomez', 'andrea@gmail.com', '8111-8888', 
- HASHBYTES('SHA2_512', 'pw_008'), 'R003', 'Activo'),
-
-('U009', 'Luis', 'Martinez', 'luis@gmail.com', '8999-0000', 
- HASHBYTES('SHA2_512', 'pw_009'), 'R004', 'Activo'),
-
-('U010', 'Mariana', 'Torres', 'mariana@gmail.com', '8000-1111', 
- HASHBYTES('SHA2_512', 'pw_010'), 'R001', 'Inactivo');
+('U001', 'Sara', 'Ruiz', 'sara@gmail.com', '8888-1111', HASHBYTES('SHA2_512', 'pw_001'), 'R001', 'Activo'),
+('U002', 'Jorge', 'Delgado', 'jorge@gmail.com', '7777-2222', HASHBYTES('SHA2_512', 'pw_002'), 'R002', 'Activo'),
+('U003', 'Enrique', 'Arana', 'enrique@gmail.com', '8666-3333', HASHBYTES('SHA2_512', 'pw_003'), 'R003', 'Activo'),
+('U004', 'Jhesly', 'Castillo', 'jhesly@gmail.com', '8555-4444', HASHBYTES('SHA2_512', 'pw_004'), 'R004', 'Activo'),
+('U005', 'Carlos', 'Mendez', 'carlos@gmail.com', '8444-5555', HASHBYTES('SHA2_512', 'pw_005'), 'R002', 'Activo'),
+('U006', 'Valeria', 'Lopez', 'valeria@gmail.com', '8333-6666', HASHBYTES('SHA2_512', 'pw_006'), 'R002', 'Activo'),
+('U007', 'Mario', 'Perez', 'mario@gmail.com', '8222-7777', HASHBYTES('SHA2_512', 'pw_007'), 'R002', 'Activo'),
+('U008', 'Andrea', 'Gomez', 'andrea@gmail.com', '8111-8888', HASHBYTES('SHA2_512', 'pw_008'), 'R003', 'Activo'),
+('U009', 'Luis', 'Martinez', 'luis@gmail.com', '8999-0000', HASHBYTES('SHA2_512', 'pw_009'), 'R004', 'Activo'),
+('U010', 'Mariana', 'Torres', 'mariana@gmail.com', '8000-1111', HASHBYTES('SHA2_512', 'pw_010'), 'R001', 'Inactivo');
 GO
 
-INSERT INTO Seguridad.Tecnicos (id_tecnico, id_usuario, especialidad, disponibilidad, estado_tecnico) VALUES
+/* Seguridad.Tecnicos */
+INSERT INTO Seguridad.Tecnicos 
+(id_tecnico, id_usuario, especialidad, disponibilidad, estado_tecnico)
+VALUES
 ('T001', 'U002', N'Hardware', N'Disponible', N'Activo'),
 ('T002', 'U005', N'Redes', N'Ocupado', N'Activo'),
 ('T003', 'U006', N'Software', N'Disponible', N'Activo'),
@@ -389,7 +436,10 @@ INSERT INTO Seguridad.Tecnicos (id_tecnico, id_usuario, especialidad, disponibil
 ('T010', 'U004', N'Soporte general', N'Disponible', N'Activo');
 GO
 
-INSERT INTO Infraestructura.Edificios (id_edificio, nombre_edificio, cantidad_pisos) VALUES
+/* Infraestructura.Edificios */
+INSERT INTO Infraestructura.Edificios 
+(id_edificio, nombre_edificio, cantidad_pisos)
+VALUES
 ('ED001', N'Edificio A', 2),
 ('ED002', N'Edificio B', 1),
 ('ED003', N'Edificio C', 3),
@@ -402,7 +452,10 @@ INSERT INTO Infraestructura.Edificios (id_edificio, nombre_edificio, cantidad_pi
 ('ED010', N'Edificio J', 4);
 GO
 
-INSERT INTO Infraestructura.Aulas (aula_id, referencia, estado_aula, id_edificio, piso) VALUES
+/* Infraestructura.Aulas */
+INSERT INTO Infraestructura.Aulas 
+(aula_id, referencia, estado_aula, id_edificio, piso)
+VALUES
 ('AUL001', N'Aula 102, frente a coordinación', N'Activa', 'ED001', 2),
 ('AUL002', N'Aula 102, cerca de recepción', N'Activa', 'ED002', 1),
 ('AUL003', N'Aula 103, pasillo principal', N'Activa', 'ED003', 1),
@@ -415,7 +468,10 @@ INSERT INTO Infraestructura.Aulas (aula_id, referencia, estado_aula, id_edificio
 ('AUL010', N'Aula 302, laboratorio auxiliar', N'Activa', 'ED010', 3);
 GO
 
-INSERT INTO Infraestructura.Laboratorios (id_laboratorio, nombre_laboratorio, descripcion, id_responsable, estado_laboratorio, aula_id) VALUES
+/* Infraestructura.Laboratorios */
+INSERT INTO Infraestructura.Laboratorios 
+(id_laboratorio, nombre_laboratorio, descripcion, id_responsable, estado_laboratorio, aula_id)
+VALUES
 ('L001', N'Laboratorio de Redes', N'Prácticas de redes y conectividad', 'U003', N'Activo', 'AUL001'),
 ('L002', N'Laboratorio de Programación', N'Prácticas de programación', 'U001', N'Activo', 'AUL002'),
 ('L003', N'Laboratorio de Hardware', N'Revisión y práctica con equipos', 'U003', N'Activo', 'AUL003'),
@@ -428,7 +484,10 @@ INSERT INTO Infraestructura.Laboratorios (id_laboratorio, nombre_laboratorio, de
 ('L010', N'Laboratorio de Soporte Técnico', N'Área de diagnóstico y reparación', 'U001', N'Activo', 'AUL010');
 GO
 
-INSERT INTO Inventario.Modelos (id_modelo, nombre_modelo, marca) VALUES
+/* Inventario.Modelos */
+INSERT INTO Inventario.Modelos 
+(id_modelo, nombre_modelo, marca)
+VALUES
 ('MOD001', N'ProBook 440', N'HP'),
 ('MOD002', N'L3150', N'Epson'),
 ('MOD003', N'OptiPlex 3080', N'Dell'),
@@ -441,7 +500,10 @@ INSERT INTO Inventario.Modelos (id_modelo, nombre_modelo, marca) VALUES
 ('MOD010', N'IdeaCentre 3', N'Lenovo');
 GO
 
-INSERT INTO Inventario.Equipos (id_equipo, aula_id, numero_serie, id_modelo, criticidad, fecha_adquisicion, estado_equipo, fecha_fuera_servicio) VALUES
+/* Inventario.Equipos */
+INSERT INTO Inventario.Equipos 
+(id_equipo, aula_id, numero_serie, id_modelo, criticidad, fecha_adquisicion, estado_equipo, fecha_fuera_servicio)
+VALUES
 ('EQ001', 'AUL001', N'HP12345', 'MOD001', N'Alta', '2024-02-10', N'Activo', NULL),
 ('EQ002', 'AUL002', N'EP98765', 'MOD002', N'Media', '2024-03-15', N'Activo', NULL),
 ('EQ003', 'AUL003', N'DL45678', 'MOD003', N'Alta', '2024-04-20', N'Fuera de servicio', '2026-05-21'),
@@ -454,7 +516,10 @@ INSERT INTO Inventario.Equipos (id_equipo, aula_id, numero_serie, id_modelo, cri
 ('EQ010', 'AUL010', N'LEN-IC3-010', 'MOD010', N'Media', '2024-11-25', N'Activo', NULL);
 GO
 
-INSERT INTO Inventario.Repuestos (id_repuesto, nombre_repuesto, categoria, unidad_medida, cantidad_disponible, stock_minimo, costo_unitario, estado) VALUES
+/* Inventario.Repuestos */
+INSERT INTO Inventario.Repuestos 
+(id_repuesto, nombre_repuesto, categoria, unidad_medida, cantidad_disponible, stock_minimo, costo_unitario, estado)
+VALUES
 ('R001', N'Fuente de poder', N'Hardware', N'Unidad', 10, 2, 850.00, N'Activo'),
 ('R002', N'Cable HDMI', N'Accesorio', N'Unidad', 25, 5, 180.00, N'Activo'),
 ('R003', N'Pasta térmica', N'Insumo', N'Unidad', 15, 3, 120.00, N'Activo'),
@@ -467,24 +532,39 @@ INSERT INTO Inventario.Repuestos (id_repuesto, nombre_repuesto, categoria, unida
 ('R010', N'Batería CMOS', N'Hardware', N'Unidad', 18, 5, 80.00, N'Activo');
 GO
 
+/* Mantenimiento.Ordenes_de_Trabajo */
 INSERT INTO Mantenimiento.Ordenes_de_Trabajo (
-    id_orden, id_equipo, id_tecnico, id_falla, tipo_mantenimiento, prioridad_orden,
-    fecha_creacion, estado_orden, diagnostico, actividades_realizadas,
-    resultado_final, fecha_cierre, id_usuario_reporta
-) VALUES
+    id_orden,
+    id_equipo,
+    id_tecnico,
+    id_falla,
+    tipo_mantenimiento,
+    prioridad_orden,
+    fecha_creacion,
+    estado_orden,
+    diagnostico,
+    actividades_realizadas,
+    resultado_final,
+    fecha_cierre,
+    id_usuario_reporta
+)
+VALUES
 ('O001', 'EQ001', 'T001', 'F001', N'Correctivo', N'Alta', '2026-05-10', N'Cerrada', N'Fuente dañada', N'Revisión y cambio de fuente', N'Equipo reparado', '2026-05-12', 'U004'),
-('O002', 'EQ002', 'T002', 'F002', N'Correctivo', N'Media', '2026-05-11', N'En proceso', N'Pendiente de revisión', N'Diagnóstico inicial', N'Pendiente', NULL, 'U004'),
-('O003', 'EQ003', 'T003', NULL, N'Preventivo', N'Media', '2026-05-13', N'Programada', N'Pendiente de revisión', N'Limpieza programada', N'Pendiente', NULL, 'U001'),
+('O002', 'EQ002', 'T002', 'F002', N'Correctivo', N'Media', '2026-05-11', N'En proceso', N'Falla de conexión pendiente de revisión', N'Diagnóstico inicial', NULL, NULL, 'U004'),
+('O003', 'EQ003', 'T003', NULL, N'Preventivo', N'Media', '2026-05-13', N'Programada', NULL, NULL, NULL, NULL, 'U001'),
 ('O004', 'EQ004', 'T004', 'F004', N'Correctivo', N'Baja', '2026-05-14', N'Cerrada', N'Cable dañado', N'Cambio de cable', N'Equipo funcional', '2026-05-15', 'U003'),
-('O005', 'EQ005', 'T005', NULL, N'Preventivo', N'Alta', '2026-05-16', N'Programada', N'Revisión preventiva planificada', N'Pendiente', N'Pendiente', NULL, 'U009'),
-('O006', 'EQ006', 'T006', 'F006', N'Correctivo', N'Media', '2026-05-17', N'En proceso', N'Falla intermitente de encendido', N'Pruebas iniciales', N'Pendiente', NULL, 'U004'),
+('O005', 'EQ005', 'T005', NULL, N'Preventivo', N'Alta', '2026-05-16', N'Programada', NULL, NULL, NULL, NULL, 'U009'),
+('O006', 'EQ006', 'T006', 'F006', N'Correctivo', N'Media', '2026-05-17', N'En proceso', N'Falla intermitente de encendido', N'Pruebas iniciales', NULL, NULL, 'U004'),
 ('O007', 'EQ007', 'T007', NULL, N'Preventivo', N'Baja', '2026-05-18', N'Cerrada', N'Mantenimiento preventivo completado', N'Limpieza y actualización básica', N'Equipo operativo', '2026-05-19', 'U003'),
 ('O008', 'EQ008', 'T008', 'F008', N'Correctivo', N'Media', '2026-05-20', N'Cerrada', N'Atasco de impresión', N'Limpieza de rodillos y cambio de cartucho', N'Impresora funcional', '2026-05-21', 'U009'),
-('O009', 'EQ009', 'T009', NULL, N'Preventivo', N'Media', '2026-05-22', N'Programada', N'Revisión de rendimiento planificada', N'Pendiente', N'Pendiente', NULL, 'U001'),
+('O009', 'EQ009', 'T009', NULL, N'Preventivo', N'Media', '2026-05-22', N'Programada', NULL, NULL, NULL, NULL, 'U001'),
 ('O010', 'EQ010', 'T010', 'F010', N'Correctivo', N'Alta', '2026-05-23', N'Cerrada', N'Disco con errores', N'Cambio de SSD y pruebas', N'Equipo reparado', '2026-05-24', 'U004');
 GO
 
-INSERT INTO Mantenimiento.Detalle_Orden_Repuesto (id_orden, id_repuesto, cantidad_usada) VALUES
+/* Mantenimiento.Detalle_Orden_Repuesto */
+INSERT INTO Mantenimiento.Detalle_Orden_Repuesto 
+(id_orden, id_repuesto, cantidad_usada)
+VALUES
 ('O001', 'R001', 1),
 ('O001', 'R003', 1),
 ('O002', 'R002', 1),
@@ -496,3 +576,5 @@ INSERT INTO Mantenimiento.Detalle_Orden_Repuesto (id_orden, id_repuesto, cantida
 ('O010', 'R006', 1),
 ('O010', 'R005', 1);
 GO
+
+
