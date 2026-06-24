@@ -577,4 +577,541 @@ VALUES
 ('O010', 'R005', 1);
 GO
 
+/* ============================================================
+   CRUD TABLA: Seguridad.Roles
+   ============================================================ */
+-- CREAR
+INSERT INTO Seguridad.Roles (id_rol, nombre_rol, descripcion_rol)
+VALUES ('R099', N'Rol de prueba', N'Rol creado para evidencia CRUD');
 
+-- CONSULTAR
+SELECT *
+FROM Seguridad.Roles
+WHERE id_rol = 'R099';
+
+-- ACTUALIZAR
+UPDATE Seguridad.Roles
+SET nombre_rol = N'Rol prueba actualizado',
+    descripcion_rol = N'Rol actualizado para evidencia CRUD',
+    updated_at = GETDATE()
+WHERE id_rol = 'R099';
+
+-- CONSULTAR ACTUALIZACIÓN
+SELECT *
+FROM Seguridad.Roles
+WHERE id_rol = 'R099';
+
+-- ELIMINAR
+DELETE FROM Seguridad.Roles
+WHERE id_rol = 'R099';
+
+-- CONSULTAR ELIMINACIÓN
+SELECT *
+FROM Seguridad.Roles
+WHERE id_rol = 'R099';
+GO
+
+/* ============================================================
+   CRUD TABLA: Seguridad.Usuarios
+   ============================================================ */
+-- CREAR
+INSERT INTO Seguridad.Usuarios
+(id_usuario, nombre, apellido, correo, telefono, pw, id_rol, estado_usuario)
+VALUES
+('U099', 'Usuario', 'Prueba', 'usuario.prueba099@gmail.com', '8999-9999',
+ HASHBYTES('SHA2_512', 'pw_099'), 'R001', 'Activo');
+
+-- CONSULTAR
+SELECT id_usuario, nombre, apellido, correo, telefono, id_rol, estado_usuario, created_at, updated_at, deleted_at
+FROM Seguridad.Usuarios
+WHERE id_usuario = 'U099';
+
+-- ACTUALIZAR
+UPDATE Seguridad.Usuarios
+SET telefono = '8777-9999',
+    estado_usuario = 'Inactivo',
+    updated_at = GETDATE()
+WHERE id_usuario = 'U099';
+
+-- CONSULTAR ACTUALIZACIÓN
+SELECT id_usuario, nombre, apellido, correo, telefono, id_rol, estado_usuario, created_at, updated_at, deleted_at
+FROM Seguridad.Usuarios
+WHERE id_usuario = 'U099';
+
+-- ELIMINAR
+DELETE FROM Seguridad.Usuarios
+WHERE id_usuario = 'U099';
+
+-- CONSULTAR ELIMINACIÓN
+SELECT *
+FROM Seguridad.Usuarios
+WHERE id_usuario = 'U099';
+GO
+
+/* ============================================================
+   CRUD TABLA: Seguridad.Tecnicos
+   ============================================================ */
+-- PREPARACIÓN: usuario requerido por la FK del técnico
+INSERT INTO Seguridad.Usuarios
+(id_usuario, nombre, apellido, correo, telefono, pw, id_rol, estado_usuario)
+VALUES
+('U098', 'Tecnico', 'Prueba', 'tecnico.prueba098@gmail.com', '8988-9898',
+ HASHBYTES('SHA2_512', 'pw_098'), 'R002', 'Activo');
+
+-- CREAR
+INSERT INTO Seguridad.Tecnicos
+(id_tecnico, id_usuario, especialidad, disponibilidad, estado_tecnico)
+VALUES
+('T099', 'U098', N'Soporte de prueba', N'Disponible', N'Activo');
+
+-- CONSULTAR
+SELECT *
+FROM Seguridad.Tecnicos
+WHERE id_tecnico = 'T099';
+
+-- ACTUALIZAR
+UPDATE Seguridad.Tecnicos
+SET especialidad = N'Redes actualizado',
+    disponibilidad = N'Ocupado',
+    updated_at = GETDATE()
+WHERE id_tecnico = 'T099';
+
+-- CONSULTAR ACTUALIZACIÓN
+SELECT *
+FROM Seguridad.Tecnicos
+WHERE id_tecnico = 'T099';
+
+-- ELIMINAR
+DELETE FROM Seguridad.Tecnicos
+WHERE id_tecnico = 'T099';
+
+-- CONSULTAR ELIMINACIÓN
+SELECT *
+FROM Seguridad.Tecnicos
+WHERE id_tecnico = 'T099';
+
+-- LIMPIEZA DE DATOS DE APOYO
+DELETE FROM Seguridad.Usuarios
+WHERE id_usuario = 'U098';
+GO
+
+/* ============================================================
+   CRUD TABLA: Infraestructura.Edificios
+   ============================================================ */
+-- CREAR
+INSERT INTO Infraestructura.Edificios
+(id_edificio, nombre_edificio, cantidad_pisos)
+VALUES
+('ED099', N'Edificio de prueba', 2);
+
+-- CONSULTAR
+SELECT *
+FROM Infraestructura.Edificios
+WHERE id_edificio = 'ED099';
+
+-- ACTUALIZAR
+UPDATE Infraestructura.Edificios
+SET nombre_edificio = N'Edificio prueba actualizado',
+    cantidad_pisos = 3,
+    updated_at = GETDATE()
+WHERE id_edificio = 'ED099';
+
+-- CONSULTAR ACTUALIZACIÓN
+SELECT *
+FROM Infraestructura.Edificios
+WHERE id_edificio = 'ED099';
+
+-- ELIMINAR
+DELETE FROM Infraestructura.Edificios
+WHERE id_edificio = 'ED099';
+
+-- CONSULTAR ELIMINACIÓN
+SELECT *
+FROM Infraestructura.Edificios
+WHERE id_edificio = 'ED099';
+GO
+
+/* ============================================================
+   CRUD TABLA: Infraestructura.Aulas
+   ============================================================ */
+-- PREPARACIÓN: edificio requerido por la FK del aula
+INSERT INTO Infraestructura.Edificios
+(id_edificio, nombre_edificio, cantidad_pisos)
+VALUES
+('ED098', N'Edificio apoyo aula', 2);
+
+-- CREAR
+INSERT INTO Infraestructura.Aulas
+(aula_id, referencia, estado_aula, id_edificio, piso)
+VALUES
+('AUL099', N'Aula de prueba CRUD', N'Activa', 'ED098', 1);
+
+-- CONSULTAR
+SELECT *
+FROM Infraestructura.Aulas
+WHERE aula_id = 'AUL099';
+
+-- ACTUALIZAR
+UPDATE Infraestructura.Aulas
+SET referencia = N'Aula de prueba actualizada',
+    estado_aula = N'Inactiva',
+    updated_at = GETDATE()
+WHERE aula_id = 'AUL099';
+
+-- CONSULTAR ACTUALIZACIÓN
+SELECT *
+FROM Infraestructura.Aulas
+WHERE aula_id = 'AUL099';
+
+-- ELIMINAR
+DELETE FROM Infraestructura.Aulas
+WHERE aula_id = 'AUL099';
+
+-- CONSULTAR ELIMINACIÓN
+SELECT *
+FROM Infraestructura.Aulas
+WHERE aula_id = 'AUL099';
+
+-- LIMPIEZA DE DATOS DE APOYO
+DELETE FROM Infraestructura.Edificios
+WHERE id_edificio = 'ED098';
+GO
+
+/* ============================================================
+   CRUD TABLA: Infraestructura.Laboratorios
+   ============================================================ */
+-- PREPARACIÓN: usuario, edificio y aula requeridos por las FK
+INSERT INTO Seguridad.Usuarios
+(id_usuario, nombre, apellido, correo, telefono, pw, id_rol, estado_usuario)
+VALUES
+('U097', 'Responsable', 'Prueba', 'responsable.prueba097@gmail.com', '8977-9797',
+ HASHBYTES('SHA2_512', 'pw_097'), 'R003', 'Activo');
+
+INSERT INTO Infraestructura.Edificios
+(id_edificio, nombre_edificio, cantidad_pisos)
+VALUES
+('ED097', N'Edificio apoyo laboratorio', 2);
+
+INSERT INTO Infraestructura.Aulas
+(aula_id, referencia, estado_aula, id_edificio, piso)
+VALUES
+('AUL098', N'Aula apoyo laboratorio', N'Activa', 'ED097', 1);
+
+-- CREAR
+INSERT INTO Infraestructura.Laboratorios
+(id_laboratorio, nombre_laboratorio, descripcion, id_responsable, estado_laboratorio, aula_id)
+VALUES
+('L099', N'Laboratorio de prueba', N'Laboratorio creado para evidencia CRUD', 'U097', N'Activo', 'AUL098');
+
+-- CONSULTAR
+SELECT *
+FROM Infraestructura.Laboratorios
+WHERE id_laboratorio = 'L099';
+
+-- ACTUALIZAR
+UPDATE Infraestructura.Laboratorios
+SET descripcion = N'Laboratorio actualizado para evidencia CRUD',
+    estado_laboratorio = N'Inactivo',
+    updated_at = GETDATE()
+WHERE id_laboratorio = 'L099';
+
+-- CONSULTAR ACTUALIZACIÓN
+SELECT *
+FROM Infraestructura.Laboratorios
+WHERE id_laboratorio = 'L099';
+
+-- ELIMINAR
+DELETE FROM Infraestructura.Laboratorios
+WHERE id_laboratorio = 'L099';
+
+-- CONSULTAR ELIMINACIÓN
+SELECT *
+FROM Infraestructura.Laboratorios
+WHERE id_laboratorio = 'L099';
+
+-- LIMPIEZA DE DATOS DE APOYO
+DELETE FROM Infraestructura.Aulas
+WHERE aula_id = 'AUL098';
+
+DELETE FROM Infraestructura.Edificios
+WHERE id_edificio = 'ED097';
+
+DELETE FROM Seguridad.Usuarios
+WHERE id_usuario = 'U097';
+GO
+
+/* ============================================================
+   CRUD TABLA: Inventario.Modelos
+   ============================================================ */
+-- CREAR
+INSERT INTO Inventario.Modelos
+(id_modelo, nombre_modelo, marca)
+VALUES
+('MOD099', N'Modelo de prueba', N'Marca prueba');
+
+-- CONSULTAR
+SELECT *
+FROM Inventario.Modelos
+WHERE id_modelo = 'MOD099';
+
+-- ACTUALIZAR
+UPDATE Inventario.Modelos
+SET nombre_modelo = N'Modelo prueba actualizado',
+    marca = N'Marca actualizada',
+    updated_at = GETDATE()
+WHERE id_modelo = 'MOD099';
+
+-- CONSULTAR ACTUALIZACIÓN
+SELECT *
+FROM Inventario.Modelos
+WHERE id_modelo = 'MOD099';
+
+-- ELIMINAR
+DELETE FROM Inventario.Modelos
+WHERE id_modelo = 'MOD099';
+
+-- CONSULTAR ELIMINACIÓN
+SELECT *
+FROM Inventario.Modelos
+WHERE id_modelo = 'MOD099';
+GO
+
+/* ============================================================
+   CRUD TABLA: Inventario.Equipos
+   ============================================================ */
+-- PREPARACIÓN: edificio, aula y modelo requeridos por las FK
+INSERT INTO Infraestructura.Edificios
+(id_edificio, nombre_edificio, cantidad_pisos)
+VALUES
+('ED096', N'Edificio apoyo equipo', 2);
+
+INSERT INTO Infraestructura.Aulas
+(aula_id, referencia, estado_aula, id_edificio, piso)
+VALUES
+('AUL097', N'Aula apoyo equipo', N'Activa', 'ED096', 1);
+
+INSERT INTO Inventario.Modelos
+(id_modelo, nombre_modelo, marca)
+VALUES
+('MOD098', N'Modelo apoyo equipo', N'Marca apoyo');
+
+-- CREAR
+INSERT INTO Inventario.Equipos
+(id_equipo, aula_id, numero_serie, id_modelo, criticidad, fecha_adquisicion, estado_equipo, fecha_fuera_servicio)
+VALUES
+('EQ099', 'AUL097', N'SERIE-PRUEBA-099', 'MOD098', N'Media', '2025-01-10', N'Activo', NULL);
+
+-- CONSULTAR
+SELECT *
+FROM Inventario.Equipos
+WHERE id_equipo = 'EQ099';
+
+-- ACTUALIZAR
+UPDATE Inventario.Equipos
+SET criticidad = N'Alta',
+    estado_equipo = N'Inactivo',
+    updated_at = GETDATE()
+WHERE id_equipo = 'EQ099';
+
+-- CONSULTAR ACTUALIZACIÓN
+SELECT *
+FROM Inventario.Equipos
+WHERE id_equipo = 'EQ099';
+
+-- ELIMINAR
+DELETE FROM Inventario.Equipos
+WHERE id_equipo = 'EQ099';
+
+-- CONSULTAR ELIMINACIÓN
+SELECT *
+FROM Inventario.Equipos
+WHERE id_equipo = 'EQ099';
+
+-- LIMPIEZA DE DATOS DE APOYO
+DELETE FROM Inventario.Modelos
+WHERE id_modelo = 'MOD098';
+
+DELETE FROM Infraestructura.Aulas
+WHERE aula_id = 'AUL097';
+
+DELETE FROM Infraestructura.Edificios
+WHERE id_edificio = 'ED096';
+GO
+
+/* ============================================================
+   CRUD TABLA: Inventario.Repuestos
+   ============================================================ */
+-- CREAR
+INSERT INTO Inventario.Repuestos
+(id_repuesto, nombre_repuesto, categoria, unidad_medida, cantidad_disponible, stock_minimo, costo_unitario, estado)
+VALUES
+('R099', N'Repuesto de prueba', N'Categoría prueba', N'Unidad', 5, 1, 100.00, N'Activo');
+
+-- CONSULTAR
+SELECT *
+FROM Inventario.Repuestos
+WHERE id_repuesto = 'R099';
+
+-- ACTUALIZAR
+UPDATE Inventario.Repuestos
+SET cantidad_disponible = 8,
+    stock_minimo = 2,
+    costo_unitario = 125.50,
+    updated_at = GETDATE()
+WHERE id_repuesto = 'R099';
+
+-- CONSULTAR ACTUALIZACIÓN
+SELECT *
+FROM Inventario.Repuestos
+WHERE id_repuesto = 'R099';
+
+-- ELIMINAR
+DELETE FROM Inventario.Repuestos
+WHERE id_repuesto = 'R099';
+
+-- CONSULTAR ELIMINACIÓN
+SELECT *
+FROM Inventario.Repuestos
+WHERE id_repuesto = 'R099';
+GO
+
+/* ============================================================
+   CRUD TABLA: Mantenimiento.Ordenes_de_Trabajo
+   ============================================================ */
+-- PREPARACIÓN: datos requeridos por las FK de la orden
+INSERT INTO Infraestructura.Edificios
+(id_edificio, nombre_edificio, cantidad_pisos)
+VALUES
+('ED095', N'Edificio apoyo orden', 2);
+
+INSERT INTO Infraestructura.Aulas
+(aula_id, referencia, estado_aula, id_edificio, piso)
+VALUES
+('AUL096', N'Aula apoyo orden', N'Activa', 'ED095', 1);
+
+INSERT INTO Inventario.Modelos
+(id_modelo, nombre_modelo, marca)
+VALUES
+('MOD097', N'Modelo apoyo orden', N'Marca apoyo');
+
+INSERT INTO Inventario.Equipos
+(id_equipo, aula_id, numero_serie, id_modelo, criticidad, fecha_adquisicion, estado_equipo, fecha_fuera_servicio)
+VALUES
+('EQ098', 'AUL096', N'SERIE-ORDEN-098', 'MOD097', N'Alta', '2025-03-15', N'Activo', NULL);
+
+INSERT INTO Seguridad.Usuarios
+(id_usuario, nombre, apellido, correo, telefono, pw, id_rol, estado_usuario)
+VALUES
+('U096', 'TecnicoOrden', 'Prueba', 'tecnico.orden096@gmail.com', '8966-9696',
+ HASHBYTES('SHA2_512', 'pw_096'), 'R002', 'Activo');
+
+INSERT INTO Seguridad.Tecnicos
+(id_tecnico, id_usuario, especialidad, disponibilidad, estado_tecnico)
+VALUES
+('T098', 'U096', N'Mantenimiento de prueba', N'Disponible', N'Activo');
+
+INSERT INTO Seguridad.Usuarios
+(id_usuario, nombre, apellido, correo, telefono, pw, id_rol, estado_usuario)
+VALUES
+('U095', 'Reporta', 'Prueba', 'reporta.prueba095@gmail.com', '8955-9595',
+ HASHBYTES('SHA2_512', 'pw_095'), 'R004', 'Activo');
+
+-- CREAR
+INSERT INTO Mantenimiento.Ordenes_de_Trabajo
+(id_orden, id_equipo, id_tecnico, id_falla, tipo_mantenimiento, prioridad_orden,
+ fecha_creacion, estado_orden, diagnostico, actividades_realizadas,
+ resultado_final, fecha_cierre, id_usuario_reporta)
+VALUES
+('O099', 'EQ098', 'T098', NULL, N'Preventivo', N'Media',
+ '2026-06-10', N'Programada', NULL, NULL, NULL, NULL, 'U095');
+
+-- CONSULTAR
+SELECT *
+FROM Mantenimiento.Ordenes_de_Trabajo
+WHERE id_orden = 'O099';
+
+-- ACTUALIZAR
+UPDATE Mantenimiento.Ordenes_de_Trabajo
+SET estado_orden = N'Cerrada',
+    prioridad_orden = N'Alta',
+    diagnostico = N'Mantenimiento preventivo sin fallas críticas',
+    actividades_realizadas = N'Limpieza, revisión y pruebas generales',
+    resultado_final = N'Equipo operativo',
+    fecha_cierre = '2026-06-11',
+    updated_at = GETDATE()
+WHERE id_orden = 'O099';
+
+-- CONSULTAR ACTUALIZACIÓN
+SELECT *
+FROM Mantenimiento.Ordenes_de_Trabajo
+WHERE id_orden = 'O099';
+
+-- ELIMINAR
+DELETE FROM Mantenimiento.Ordenes_de_Trabajo
+WHERE id_orden = 'O099';
+
+-- CONSULTAR ELIMINACIÓN
+SELECT *
+FROM Mantenimiento.Ordenes_de_Trabajo
+WHERE id_orden = 'O099';
+
+-- LIMPIEZA DE DATOS DE APOYO
+DELETE FROM Inventario.Equipos
+WHERE id_equipo = 'EQ098';
+
+DELETE FROM Seguridad.Tecnicos
+WHERE id_tecnico = 'T098';
+
+DELETE FROM Seguridad.Usuarios
+WHERE id_usuario IN ('U096', 'U095');
+
+DELETE FROM Inventario.Modelos
+WHERE id_modelo = 'MOD097';
+
+DELETE FROM Infraestructura.Aulas
+WHERE aula_id = 'AUL096';
+
+DELETE FROM Infraestructura.Edificios
+WHERE id_edificio = 'ED095';
+GO
+
+/* ============================================================
+   CRUD TABLA: Mantenimiento.Detalle_Orden_Repuesto
+   ============================================================ */
+-- CREAR
+-- Se usa la orden O002 y el repuesto R003 ya existentes en el script base.
+INSERT INTO Mantenimiento.Detalle_Orden_Repuesto
+(id_orden, id_repuesto, cantidad_usada)
+VALUES
+('O002', 'R003', 1);
+
+-- CONSULTAR
+SELECT *
+FROM Mantenimiento.Detalle_Orden_Repuesto
+WHERE id_orden = 'O002'
+  AND id_repuesto = 'R003';
+
+-- ACTUALIZAR
+UPDATE Mantenimiento.Detalle_Orden_Repuesto
+SET cantidad_usada = 2,
+    updated_at = GETDATE()
+WHERE id_orden = 'O002'
+  AND id_repuesto = 'R003';
+
+-- CONSULTAR ACTUALIZACIÓN
+SELECT *
+FROM Mantenimiento.Detalle_Orden_Repuesto
+WHERE id_orden = 'O002'
+  AND id_repuesto = 'R003';
+
+-- ELIMINAR
+DELETE FROM Mantenimiento.Detalle_Orden_Repuesto
+WHERE id_orden = 'O002'
+  AND id_repuesto = 'R003';
+
+-- CONSULTAR ELIMINACIÓN
+SELECT *
+FROM Mantenimiento.Detalle_Orden_Repuesto
+WHERE id_orden = 'O002'
+  AND id_repuesto = 'R003';
+GO
