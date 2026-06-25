@@ -576,7 +576,7 @@ VALUES
 ('O010', 'R006', 1),
 ('O010', 'R005', 1);
 GO
-
+/*
 /* ============================================================
    CRUD TABLA: Seguridad.Roles
    ============================================================ */
@@ -1115,3 +1115,5 @@ FROM Mantenimiento.Detalle_Orden_Repuesto
 WHERE id_orden = 'O002'
   AND id_repuesto = 'R003';
 GO
+*/
+
